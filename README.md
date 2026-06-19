@@ -2,7 +2,7 @@
 
 React Native와 Expo SDK 56을 기반으로 구축된 DeunDeun 앱의 프론트엔드 레포지토리입니다.
 
-## 🛠 Tech Stack (기술 스택)
+## Tech Stack (기술 스택)
 
 - **Framework**: [React Native](https://reactnative.dev/) (with [Expo SDK 56](https://docs.expo.dev/))
 - **Language**: TypeScript
@@ -54,6 +54,6 @@ npx expo start
 
 ---
 
-## ⚙️ Path Aliases (경로 별칭)
+## Path Aliases (경로 별칭)
 보다 깔끔한 코드 가독성을 위해 `@/` 프리픽스를 사용해 상대 경로 대신 절대 경로 형태로 가져올 수 있습니다.
 - 예: `import Button from '@/components/Button';`
