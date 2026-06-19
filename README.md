@@ -12,7 +12,7 @@ React Native와 Expo SDK 56을 기반으로 구축된 DeunDeun 앱의 프론트�
 
 ---
 
-## 📂 Directory Structure (폴더 구조)
+## Directory Structure (폴더 구조)
 
 ```text
 src/
@@ -30,7 +30,7 @@ src/
 
 ---
 
-## 🚀 Getting Started (시작 가이드)
+## Getting Started (시작 가이드)
 
 ### 1. 패키지 설치
 프로젝트 루트 폴더에서 패키지를 다운로드합니다.
