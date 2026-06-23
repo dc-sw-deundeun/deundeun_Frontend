@@ -1,9 +1,11 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { StyleSheet, View, ScrollView } from 'react-native';
+import Text from '@/components/Text';
 import { COLORS, SPACING } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Flame, Star, Award } from 'lucide-react-native';
+import ScreenHeader from '@/components/ScreenHeader';
 import Card from '@/components/Card';
 
 interface CompanionCharacter {
@@ -32,8 +34,10 @@ export default function GrowthScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Welcome Section */}
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <ScreenHeader title="성장 기록" variant="section" />
+        <View style={styles.scrollContent}>
+          {/* Welcome Section */}
         <View style={styles.welcomeSection}>
           <Text style={[styles.welcomeText, { color: theme.text }]}>오늘도 반가워요! ✦</Text>
           <Text style={[styles.welcomeSub, { color: theme.textMuted }]}>
@@ -125,6 +129,7 @@ export default function GrowthScreen() {
             ))}
           </View>
         </View>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -134,9 +139,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  scrollContainer: {
+    paddingBottom: 100,
+  },
   scrollContent: {
     padding: SPACING.lg,
-    paddingBottom: 100,
     gap: SPACING.lg,
   },
   welcomeSection: {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Modal, Alert } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, ScrollView, Modal, Alert } from 'react-native';
+import Text from '@/components/Text';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -73,7 +74,7 @@ export default function SearchBrowseScreen({ navigation }: RootStackScreenProps<
           /* Search Results Screen State */
           <View style={styles.resultsState}>
             {/* Main Result Card */}
-            <View style={[styles.resultCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View style={[styles.resultCard, { backgroundColor: theme.card, shadowColor: isDarkMode ? '#000000' : '#1C2E21', shadowOpacity: isDarkMode ? 0.3 : 0.04 }]}>
               <Text style={[styles.resultCategory, { color: COLORS.primary }]}>건강 사전</Text>
               <Text style={[styles.resultTitle, { color: theme.text }]}>{query}이란?</Text>
               <Text style={[styles.resultBody, { color: theme.textMuted }]}>
@@ -84,7 +85,7 @@ export default function SearchBrowseScreen({ navigation }: RootStackScreenProps<
             </View>
 
             {/* My Stats Card */}
-            <View style={[styles.myStatsCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View style={[styles.myStatsCard, { backgroundColor: theme.card, shadowColor: isDarkMode ? '#000000' : '#1C2E21', shadowOpacity: isDarkMode ? 0.3 : 0.04 }]}>
               <View style={styles.statsLeft}>
                 <Text style={[styles.statsLabel, { color: theme.textMuted }]}>내 {query} 최근 기록</Text>
                 <Text style={[styles.statsValue, { color: theme.text }]}>
@@ -246,10 +247,12 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
   },
   resultCard: {
-    borderRadius: 20,
-    borderWidth: 1.5,
+    borderRadius: 24,
     padding: SPACING.lg,
     gap: SPACING.sm,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 16,
+    elevation: 3,
   },
   resultCategory: {
     fontSize: 12,
@@ -270,8 +273,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: SPACING.md,
-    borderRadius: 16,
-    borderWidth: 1.5,
+    borderRadius: 20,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    elevation: 2,
   },
   statsLeft: {
     gap: 2,

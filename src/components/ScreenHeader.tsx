@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import Text from '@/components/Text';
 import { ArrowLeft } from 'lucide-react-native';
 import { COLORS, SPACING } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
@@ -29,8 +30,9 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
   if (variant === 'section') {
     return (
       <View style={[styles.sectionHeader, { borderBottomColor: theme.border }]}>
+        <View style={styles.sectionHeaderLeft} />
         <Text style={[styles.sectionTitle, { color: theme.text }]}>{title}</Text>
-        {right}
+        <View style={styles.sectionHeaderRight}>{right}</View>
       </View>
     );
   }
@@ -75,16 +77,25 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   sectionHeader: {
-    paddingHorizontal: SPACING.lg,
+    paddingHorizontal: 20,
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
   },
+  sectionHeaderLeft: {
+    width: 40,
+  },
+  sectionHeaderRight: {
+    width: 40,
+    alignItems: 'flex-end',
+  },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '800',
+    letterSpacing: -0.5,
+    textAlign: 'center',
   },
 });
 

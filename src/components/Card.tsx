@@ -11,7 +11,7 @@ interface CardProps {
 }
 
 /** Themed bordered container used for grouped content blocks across screens. */
-export const Card: React.FC<CardProps> = ({ children, style, padding = 16, radius = 20 }) => {
+export const Card: React.FC<CardProps> = ({ children, style, padding = 16, radius = 24 }) => {
   const { isDarkMode } = useAppStore();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
 
@@ -20,10 +20,13 @@ export const Card: React.FC<CardProps> = ({ children, style, padding = 16, radiu
       style={[
         {
           backgroundColor: theme.card,
-          borderColor: theme.border,
-          borderWidth: 1.5,
           borderRadius: radius,
           padding,
+          shadowColor: isDarkMode ? '#000000' : '#1C2E21',
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: isDarkMode ? 0.3 : 0.04,
+          shadowRadius: 16,
+          elevation: 3,
         },
         style,
       ]}

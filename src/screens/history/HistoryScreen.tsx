@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Modal, Alert } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Modal, Alert } from 'react-native';
+import Text from '@/components/Text';
 import { COLORS, SPACING } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -103,16 +104,16 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top', 'left', 'right']}>
-      <ScreenHeader title="검진 기록" variant="section" />
-
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>나의 과거 검진 내역</Text>
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <ScreenHeader title="검진 기록" variant="section" />
+        <View style={styles.scrollContent}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>나의 과거 검진 내역</Text>
 
         <View style={styles.recordList}>
           {records.map((record) => (
             <TouchableOpacity
               key={record.id}
-              style={[styles.recordCard, { backgroundColor: theme.card, borderColor: theme.border }]}
+              style={[styles.recordCard, { backgroundColor: theme.card, shadowColor: isDarkMode ? '#000000' : '#1C2E21', shadowOpacity: isDarkMode ? 0.3 : 0.04 }]}
               onPress={() => handleCardPress(record)}
             >
               <View style={styles.cardHeader}>
@@ -145,6 +146,7 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
               </View>
             </TouchableOpacity>
           ))}
+        </View>
         </View>
       </ScrollView>
 
@@ -223,9 +225,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  scrollContainer: {
+    paddingBottom: 170, // Leave room for tab bar and floating button
+  },
   scrollContent: {
     padding: SPACING.lg,
-    paddingBottom: 170, // Leave room for tab bar and floating button
     gap: SPACING.lg,
   },
   sectionTitle: {
@@ -236,14 +240,11 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
   },
   recordCard: {
-    borderRadius: 20,
-    borderWidth: 1.5,
+    borderRadius: 24,
     padding: SPACING.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.02,
-    shadowRadius: 6,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 16,
+    elevation: 3,
   },
   cardHeader: {
     flexDirection: 'row',

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import Text from '@/components/Text';
 import { COLORS, SPACING } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronRight, User, Link, Bell, Lock } from 'lucide-react-native';
+import ScreenHeader from '@/components/ScreenHeader';
 import Card from '@/components/Card';
 
 // Navigation types
@@ -28,7 +30,9 @@ export default function MyPageScreen({ navigation }: MyPageScreenProps) {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <ScreenHeader title="마이페이지" variant="section" />
+        <View style={styles.scrollContent}>
         {/* Profile Card */}
         <Card style={styles.profileCard} radius={24}>
           <View style={[styles.avatarCircle, { backgroundColor: COLORS.primaryLight }]}>
@@ -147,6 +151,7 @@ export default function MyPageScreen({ navigation }: MyPageScreenProps) {
         <TouchableOpacity style={styles.logoutBtn} onPress={() => navigation.navigate('Splash')}>
           <Text style={styles.logoutText}>로그아웃</Text>
         </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -156,9 +161,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  scrollContainer: {
+    paddingBottom: 100,
+  },
   scrollContent: {
     padding: SPACING.lg,
-    paddingBottom: 100,
     gap: SPACING.lg,
   },
   profileCard: {

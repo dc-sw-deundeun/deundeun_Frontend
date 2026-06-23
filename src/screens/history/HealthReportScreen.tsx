@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import Text from '@/components/Text';
 import { COLORS, SPACING } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -32,7 +33,7 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Comprehensive Health State */}
-        <View style={[styles.summaryCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+        <View style={[styles.summaryCard, { backgroundColor: theme.card, shadowColor: isDarkMode ? '#000000' : '#1C2E21', shadowOpacity: isDarkMode ? 0.3 : 0.04 }]}>
           <View style={styles.summaryTopRow}>
             <View style={[styles.alertIconCircle, { backgroundColor: COLORS.warning + '15' }]}>
               <AlertTriangle color={COLORS.warning} size={26} />
@@ -47,7 +48,7 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
         </View>
 
         {/* Blood Sugar Analysis */}
-        <View style={[styles.detailCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+        <View style={[styles.detailCard, { backgroundColor: theme.card, shadowColor: isDarkMode ? '#000000' : '#1C2E21', shadowOpacity: isDarkMode ? 0.3 : 0.04 }]}>
           <View style={styles.cardHeaderRow}>
             <Text style={[styles.cardTitle, { color: theme.text }]}>공복혈당 분석</Text>
             <View style={[styles.statusBadge, { backgroundColor: COLORS.error + '15' }]}>
@@ -89,7 +90,7 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
         <View style={styles.otherGroup}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>기타 혈관 건강 지표</Text>
 
-          <View style={[styles.cardList, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <View style={[styles.cardList, { backgroundColor: theme.card, shadowColor: isDarkMode ? '#000000' : '#1C2E21', shadowOpacity: isDarkMode ? 0.3 : 0.04 }]}>
             {/* Blood Pressure */}
             <View style={styles.listItem}>
               <View>
@@ -138,7 +139,7 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
             '식사할 때 잡곡밥과 채소 먼저 먹기',
             '단 액상과당 음료 끊고 물 마시기',
           ].map((habit, idx) => (
-            <View key={idx} style={[styles.habitCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View key={idx} style={[styles.habitCard, { backgroundColor: theme.card, shadowColor: isDarkMode ? '#000000' : '#1C2E21', shadowOpacity: isDarkMode ? 0.3 : 0.04 }]}>
               <View style={styles.habitLeft}>
                 <ClipboardList color={COLORS.primary} size={20} />
                 <Text style={[styles.habitText, { color: theme.text }]}>{habit}</Text>
@@ -186,9 +187,11 @@ const styles = StyleSheet.create({
     gap: SPACING.lg,
   },
   summaryCard: {
-    borderRadius: 20,
-    borderWidth: 1.5,
+    borderRadius: 24,
     padding: SPACING.md,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 16,
+    elevation: 3,
   },
   summaryTopRow: {
     flexDirection: 'row',
@@ -212,8 +215,10 @@ const styles = StyleSheet.create({
   },
   detailCard: {
     borderRadius: 24,
-    borderWidth: 1.5,
     padding: SPACING.lg,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 16,
+    elevation: 3,
   },
   cardHeaderRow: {
     flexDirection: 'row',
@@ -298,9 +303,11 @@ const styles = StyleSheet.create({
     paddingLeft: SPACING.xs,
   },
   cardList: {
-    borderRadius: 20,
-    borderWidth: 1.5,
+    borderRadius: 24,
     overflow: 'hidden',
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 16,
+    elevation: 3,
   },
   listItem: {
     flexDirection: 'row',
@@ -337,8 +344,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: SPACING.md,
-    borderRadius: 16,
-    borderWidth: 1.5,
+    borderRadius: 20,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    elevation: 2,
   },
   habitLeft: {
     flexDirection: 'row',
