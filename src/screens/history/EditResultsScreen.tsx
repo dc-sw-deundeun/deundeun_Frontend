@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import Text from '@/components/Text';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';

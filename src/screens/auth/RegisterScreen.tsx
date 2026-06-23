@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import Text from '@/components/Text';
 import { RootStackScreenProps } from '@/types/navigation';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';

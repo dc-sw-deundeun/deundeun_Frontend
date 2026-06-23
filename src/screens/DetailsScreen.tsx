@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import Text from '@/components/Text';
 import { RootStackScreenProps } from '@/types/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/constants/theme';

@@ -1,14 +1,6 @@
 import React, { useRef } from 'react';
-import { 
-  Text, 
-  StyleSheet, 
-  Pressable, 
-  Animated, 
-  ActivityIndicator, 
-  StyleProp, 
-  ViewStyle, 
-  TextStyle 
-} from 'react-native';
+import { StyleSheet, Pressable, Animated, ActivityIndicator, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import Text from '@/components/Text';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/constants/theme';
 
 interface ButtonProps {
