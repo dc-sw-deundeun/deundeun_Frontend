@@ -4,7 +4,6 @@ import { COLORS, SPACING } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Flame, Star, Award } from 'lucide-react-native';
-import ScreenHeader from '@/components/ScreenHeader';
 import Card from '@/components/Card';
 
 interface CompanionCharacter {
@@ -33,8 +32,6 @@ export default function GrowthScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top', 'left', 'right']}>
-      <ScreenHeader title="성장 기록" variant="section" />
-
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
@@ -139,6 +136,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: SPACING.lg,
+    paddingBottom: 100,
     gap: SPACING.lg,
   },
   welcomeSection: {

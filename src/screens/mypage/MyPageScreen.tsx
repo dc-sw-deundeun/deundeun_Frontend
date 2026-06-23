@@ -4,7 +4,6 @@ import { COLORS, SPACING } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronRight, User, Link, Bell, Lock } from 'lucide-react-native';
-import ScreenHeader from '@/components/ScreenHeader';
 import Card from '@/components/Card';
 
 // Navigation types
@@ -29,8 +28,6 @@ export default function MyPageScreen({ navigation }: MyPageScreenProps) {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top', 'left', 'right']}>
-      <ScreenHeader title="마이페이지" variant="section" />
-
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Profile Card */}
         <Card style={styles.profileCard} radius={24}>
@@ -161,6 +158,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: SPACING.lg,
+    paddingBottom: 100,
     gap: SPACING.lg,
   },
   profileCard: {

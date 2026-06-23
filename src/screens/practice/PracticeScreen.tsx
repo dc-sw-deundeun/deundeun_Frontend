@@ -4,7 +4,6 @@ import { COLORS, SPACING } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Check, Calendar, ChevronRight, Award, Flame } from 'lucide-react-native';
-import ScreenHeader from '@/components/ScreenHeader';
 
 interface DailyMission {
   id: number;
@@ -44,8 +43,6 @@ export default function PracticeScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top', 'left', 'right']}>
-      <ScreenHeader title="매일의 실천" variant="section" />
-
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Weekly Streak Bar */}
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
@@ -218,6 +215,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: SPACING.lg,
+    paddingBottom: 100,
     gap: SPACING.lg,
   },
   card: {

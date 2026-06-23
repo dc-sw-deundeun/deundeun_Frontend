@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: SPACING.lg,
-    paddingBottom: 100, // Leave room for floating button
+    paddingBottom: 170, // Leave room for tab bar and floating button
     gap: SPACING.lg,
   },
   sectionTitle: {
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
   },
   floatingBtn: {
     position: 'absolute',
-    bottom: SPACING.lg,
+    bottom: 92, // Positioned above the 76px bottom tab bar
     right: SPACING.lg,
     width: 56,
     height: 56,
