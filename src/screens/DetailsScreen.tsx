@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { HomeStackScreenProps } from '@/types/navigation';
+import { RootStackScreenProps } from '@/types/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/constants/theme';
 import Button from '@/components/Button';
 
-export const DetailsScreen: React.FC<HomeStackScreenProps<'Details'>> = ({ route, navigation }) => {
+export const DetailsScreen: React.FC<RootStackScreenProps<'Details'>> = ({ route, navigation }) => {
   const { itemId, otherParam } = route.params;
   const { isDarkMode } = useAppStore();
 
