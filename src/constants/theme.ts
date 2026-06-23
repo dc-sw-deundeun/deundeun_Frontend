@@ -1,29 +1,34 @@
 export const COLORS = {
-  primary: '#6366f1',      // Indigo 500
-  primaryDark: '#4f46e5',  // Indigo 600
-  primaryLight: '#c7d2fe', // Indigo 200
-  
+  primary: '#3F4928',      // Dark Olive Green (wireframe CTA buttons)
+  primaryDark: '#2C331C',  // Deeper olive (pressed / badges)
+  primaryLight: '#E1E7CE', // Soft sage tint (secondary bg, badges)
+  accent: '#7FA65A',       // Fresh leaf green (success highlights)
+
   // Light Mode Colors
   light: {
-    background: '#f8fafc', // Slate 50
+    background: '#F4EFE4', // Warm cream
     card: '#ffffff',
-    text: '#0f172a',       // Slate 900
-    textMuted: '#64748b',  // Slate 500
-    border: '#e2e8f0',     // Slate 200
+    text: '#332B22',       // Warm dark brown-black
+    textMuted: '#8C8473',  // Warm muted gray-brown
+    border: '#E6DFD0',     // Warm light border
+    disabledBg: '#E6E2D4',
+    disabledText: '#ABA493',
   },
 
   // Dark Mode Colors
   dark: {
-    background: '#0f172a', // Slate 900
-    card: '#1e293b',       // Slate 800
-    text: '#f8fafc',       // Slate 50
-    textMuted: '#94a3b8',  // Slate 400
-    border: '#334155',     // Slate 700
+    background: '#23241C', // Dark olive-black
+    card: '#2E3023',
+    text: '#F4EFE4',
+    textMuted: '#A6A08D',
+    border: '#3C3D2E',
+    disabledBg: '#3C3D2E',
+    disabledText: '#6E6A5A',
   },
 
-  success: '#10b981',      // Emerald 500
-  warning: '#f59e0b',      // Amber 500
-  error: '#ef4444',        // Red 500
+  success: '#4C7A3D',      // Muted forest success
+  warning: '#C9852E',      // Warm amber
+  error: '#B3463B',        // Muted brick red
 };
 
 export const SPACING = {

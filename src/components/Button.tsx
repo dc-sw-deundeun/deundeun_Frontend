@@ -153,8 +153,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary,
   },
   disabled: {
-    backgroundColor: '#e2e8f0',
-    borderColor: '#e2e8f0',
+    backgroundColor: COLORS.light.disabledBg,
+    borderColor: COLORS.light.disabledBg,
   },
   // Text Styles
   text: {
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
   },
   textDisabled: {
-    color: '#94a3b8',
+    color: COLORS.light.disabledText,
   },
 });
 
