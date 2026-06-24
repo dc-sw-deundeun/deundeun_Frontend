@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import Text from '@/components/Text';
+import Card from '@/components/Card';
 import { COLORS, SPACING } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -33,7 +34,7 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Comprehensive Health State */}
-        <View style={[styles.summaryCard, { backgroundColor: theme.card, shadowColor: isDarkMode ? '#000000' : '#1C2E21', shadowOpacity: isDarkMode ? 0.3 : 0.04 }]}>
+        <Card style={styles.summaryCard} padding={SPACING.md}>
           <View style={styles.summaryTopRow}>
             <View style={[styles.alertIconCircle, { backgroundColor: COLORS.warning + '15' }]}>
               <AlertTriangle color={COLORS.warning} size={26} />
@@ -45,10 +46,10 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
               </Text>
             </View>
           </View>
-        </View>
+        </Card>
 
         {/* Blood Sugar Analysis */}
-        <View style={[styles.detailCard, { backgroundColor: theme.card, shadowColor: isDarkMode ? '#000000' : '#1C2E21', shadowOpacity: isDarkMode ? 0.3 : 0.04 }]}>
+        <Card style={styles.detailCard}>
           <View style={styles.cardHeaderRow}>
             <Text style={[styles.cardTitle, { color: theme.text }]}>공복혈당 분석</Text>
             <View style={[styles.statusBadge, { backgroundColor: COLORS.error + '15' }]}>
@@ -84,13 +85,13 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
           <Text style={[styles.interpretationText, { color: theme.textMuted }]}>
             {bloodSugar}은 당뇨 전단계 수치입니다. 식후 가벼운 걷기와 잡곡밥/야채 위주의 식이섬유 섭취를 유지하면 4주 내에 안심 범위(100 미만)로 개선할 수 있습니다.
           </Text>
-        </View>
+        </Card>
 
         {/* Other Indicators list */}
         <View style={styles.otherGroup}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>기타 혈관 건강 지표</Text>
 
-          <View style={[styles.cardList, { backgroundColor: theme.card, shadowColor: isDarkMode ? '#000000' : '#1C2E21', shadowOpacity: isDarkMode ? 0.3 : 0.04 }]}>
+          <Card style={styles.cardList} padding={0}>
             {/* Blood Pressure */}
             <View style={styles.listItem}>
               <View>
@@ -127,7 +128,7 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
                 <Text style={[styles.itemBadgeText, { color: COLORS.success }]}>정상</Text>
               </View>
             </View>
-          </View>
+          </Card>
         </View>
 
         {/* Habit Recommendations */}
@@ -139,7 +140,7 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
             '식사할 때 잡곡밥과 채소 먼저 먹기',
             '단 액상과당 음료 끊고 물 마시기',
           ].map((habit, idx) => (
-            <View key={idx} style={[styles.habitCard, { backgroundColor: theme.card, shadowColor: isDarkMode ? '#000000' : '#1C2E21', shadowOpacity: isDarkMode ? 0.3 : 0.04 }]}>
+            <Card key={idx} style={styles.habitCard} padding={SPACING.md} radius={20}>
               <View style={styles.habitLeft}>
                 <ClipboardList color={COLORS.primary} size={20} />
                 <Text style={[styles.habitText, { color: theme.text }]}>{habit}</Text>
@@ -170,7 +171,7 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
                   {addedMissions.includes(habit) ? '추가됨' : '미션 받기'}
                 </Text>
               </TouchableOpacity>
-            </View>
+            </Card>
           ))}
         </View>
       </ScrollView>
@@ -186,13 +187,7 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
     gap: SPACING.lg,
   },
-  summaryCard: {
-    borderRadius: 24,
-    padding: SPACING.md,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 16,
-    elevation: 3,
-  },
+  summaryCard: {},
   summaryTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -213,13 +208,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 2,
   },
-  detailCard: {
-    borderRadius: 24,
-    padding: SPACING.lg,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 16,
-    elevation: 3,
-  },
+  detailCard: {},
   cardHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -302,13 +291,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     paddingLeft: SPACING.xs,
   },
-  cardList: {
-    borderRadius: 24,
-    overflow: 'hidden',
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 16,
-    elevation: 3,
-  },
+  cardList: {},
   listItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -343,11 +326,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: SPACING.md,
-    borderRadius: 20,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 12,
-    elevation: 2,
   },
   habitLeft: {
     flexDirection: 'row',

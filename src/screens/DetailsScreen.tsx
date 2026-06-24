@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Text from '@/components/Text';
+import Card from '@/components/Card';
 import { RootStackScreenProps } from '@/types/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/constants/theme';
@@ -14,7 +15,7 @@ export const DetailsScreen: React.FC<RootStackScreenProps<'Details'>> = ({ route
 
   return (
     <View style={[styles.container, { backgroundColor: themeColors.background }]}>
-      <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+      <Card style={styles.card} radius={16}>
         <Text style={[styles.title, { color: themeColors.text }]}>상세 보기</Text>
         
         <View style={styles.divider} />
@@ -45,7 +46,7 @@ export const DetailsScreen: React.FC<RootStackScreenProps<'Details'>> = ({ route
             style={styles.button}
           />
         </View>
-      </View>
+      </Card>
     </View>
   );
 };
@@ -57,14 +58,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   card: {
-    borderRadius: 16,
-    borderWidth: 1,
     padding: SPACING.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
   },
   title: {
     ...TYPOGRAPHY.h2,

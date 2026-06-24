@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Modal, Alert } from 'react-native';
 import Text from '@/components/Text';
+import Card from '@/components/Card';
 import { COLORS, SPACING } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -111,9 +112,9 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
 
         <View style={styles.recordList}>
           {records.map((record) => (
-            <TouchableOpacity
+            <Card
               key={record.id}
-              style={[styles.recordCard, { backgroundColor: theme.card, shadowColor: isDarkMode ? '#000000' : '#1C2E21', shadowOpacity: isDarkMode ? 0.3 : 0.04 }]}
+              style={styles.recordCard}
               onPress={() => handleCardPress(record)}
             >
               <View style={styles.cardHeader}>
@@ -144,7 +145,7 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
                   </Text>
                 </View>
               </View>
-            </TouchableOpacity>
+            </Card>
           ))}
         </View>
         </View>
@@ -239,13 +240,7 @@ const styles = StyleSheet.create({
   recordList: {
     gap: SPACING.md,
   },
-  recordCard: {
-    borderRadius: 24,
-    padding: SPACING.lg,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 16,
-    elevation: 3,
-  },
+  recordCard: {},
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',

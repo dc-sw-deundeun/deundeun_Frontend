@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Modal, Animated } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Modal, Animated, PanResponder, Alert, Platform, Image } from 'react-native';
 import Text from '@/components/Text';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
@@ -33,9 +33,20 @@ interface AnimalCharacter {
   posY: number;
 }
 
+const CroakingFrog = () => {
+  return (
+    <View style={styles.frogContainer}>
+      <Image
+        source={require('../assets/ezgif.com-animated-gif-maker.gif')} // 새로 추가된 GIF 개구리 이미지 경로
+        style={styles.frog}
+      />
+    </View>
+  );
+};
+
 export default function HomeScreen({ navigation }: HomeScreenProps) {
   const { isDarkMode } = useAppStore();
-  
+
   // Custom theme variables for the new design (soft pasture theme)
   const theme = {
     background: '#A6D7A8', // Pastel grass green
@@ -51,9 +62,9 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
   // Today's Missions
   const [missions, setMissions] = useState<Mission[]>([
-    { id: 1, title: '아침 30분 걷기', points: 10, completed: false, emoji: '🚶' },
-    { id: 2, title: '잡곡밥 · 채소 먼저', points: 10, completed: false, emoji: '🥗' },
-    { id: 3, title: '물 자주 마시기', points: 5, completed: false, emoji: '💧' },
+    { id: 1, title: '아침 30분 걷기', points: 10, completed: false, emoji: 'hi' },
+    { id: 2, title: '잡곡밥 · 채소 먼저', points: 10, completed: false, emoji: 'dh' },
+    { id: 3, title: '물 자주 마시기', points: 5, completed: false, emoji: 'kk' },
   ]);
 
   // Floating animal characters positioning
@@ -66,32 +77,138 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     { id: 6, emoji: '🐧', level: null, posX: 190, posY: 240 },
   ]);
 
+  // Verification Modal states
+  const [isVerifyModalVisible, setIsVerifyModalVisible] = useState(false);
+  const [activeMissionId, setActiveMissionId] = useState<number | null>(null);
+
   // Level Up Modal states
   const [isLevelUpVisible, setIsLevelUpVisible] = useState(false);
   const [levelUpAnimal, setLevelUpAnimal] = useState<string>('곰');
 
+  // Glass styles
+  const glassSheetStyle = {
+    backgroundColor: isDarkMode ? 'rgba(46, 48, 35, 0.55)' : 'rgba(255, 255, 255, 0.45)',
+    borderWidth: 1,
+    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.75)',
+    shadowColor: isDarkMode ? '#000000' : '#1C2E21',
+    shadowOpacity: isDarkMode ? 0.12 : 0.05,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: -8 },
+    elevation: 8,
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+      },
+    }),
+  };
+
+  const glassModalCardStyle = {
+    backgroundColor: isDarkMode ? 'rgba(46, 48, 35, 0.85)' : 'rgba(255, 255, 255, 0.75)',
+    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.75)',
+    shadowColor: isDarkMode ? '#000000' : '#1C2E21',
+    shadowOpacity: isDarkMode ? 0.15 : 0.08,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+      },
+    }),
+  };
+
+  // Draggable bottom sheet animation values
+  const sheetY = useRef(new Animated.Value(0)).current;
+  const lastSheetY = useRef(0);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dy) > 5;
+      },
+      onPanResponderGrant: () => {
+        sheetY.setOffset(lastSheetY.current);
+        sheetY.setValue(0);
+      },
+      onPanResponderMove: (e, gestureState) => {
+        const nextY = gestureState.dy;
+        const totalY = lastSheetY.current + nextY;
+        if (totalY < 0) {
+          sheetY.setValue(-lastSheetY.current);
+        } else if (totalY > 260) {
+          sheetY.setValue(260 - lastSheetY.current);
+        } else {
+          sheetY.setValue(nextY);
+        }
+      },
+      onPanResponderRelease: (e, gestureState) => {
+        sheetY.flattenOffset();
+        const currentY = (sheetY as any)._value;
+        let targetY = 0;
+        if (currentY > 130) {
+          targetY = 260;
+        }
+
+        Animated.spring(sheetY, {
+          toValue: targetY,
+          useNativeDriver: true,
+          tension: 40,
+          friction: 6,
+        }).start(() => {
+          lastSheetY.current = targetY;
+        });
+      },
+    })
+  ).current;
+
   const completedCount = missions.filter((m) => m.completed).length;
 
   const handleToggleMission = (id: number) => {
-    const updatedMissions = missions.map((m) => {
-      if (m.id === id) {
-        const nextState = !m.completed;
-        // Adjust points based on toggle
-        setTotalPoints((prev) => (nextState ? prev + m.points : prev - m.points));
-        return { ...m, completed: nextState };
+    const mission = missions.find((m) => m.id === id);
+    if (!mission) return;
+
+    if (mission.completed) {
+      const updatedMissions = missions.map((m) => {
+        if (m.id === id) {
+          setTotalPoints((prev) => prev - m.points);
+          return { ...m, completed: false };
+        }
+        return m;
+      });
+      setMissions(updatedMissions);
+    } else {
+      setActiveMissionId(id);
+      setIsVerifyModalVisible(true);
+    }
+  };
+
+  const handleCompleteVerification = () => {
+    if (activeMissionId !== null) {
+      const updatedMissions = missions.map((m) => {
+        if (m.id === activeMissionId) {
+          const nextState = !m.completed;
+          if (nextState) {
+            setTotalPoints((prev) => prev + m.points);
+          }
+          return { ...m, completed: nextState };
+        }
+        return m;
+      });
+
+      setMissions(updatedMissions);
+      setIsVerifyModalVisible(false);
+      Alert.alert('미션 인증 완료', '미션 인증이 완료되어 포인트가 지급되었습니다!');
+
+      const nextCompletedCount = updatedMissions.filter((m) => m.completed).length;
+      if (nextCompletedCount === missions.length) {
+        setTimeout(() => {
+          setLevelUpAnimal('곰');
+          setIsLevelUpVisible(true);
+        }, 600);
       }
-      return m;
-    });
-
-    setMissions(updatedMissions);
-
-    // If all completed, trigger level up pop-up
-    const nextCompletedCount = updatedMissions.filter((m) => m.completed).length;
-    if (nextCompletedCount === missions.length) {
-      setTimeout(() => {
-        setLevelUpAnimal('곰');
-        setIsLevelUpVisible(true);
-      }, 600);
     }
   };
 
@@ -100,7 +217,10 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       {/* Top Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Text style={styles.sproutEmoji}>🌱</Text>
+          <Image
+            source={require('../assets/splash_Icon.png')}
+            style={styles.logoImage}
+          />
           <Text style={[styles.logoText, { color: theme.textDark }]}>든든</Text>
         </View>
 
@@ -143,22 +263,35 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               </Text>
             )}
             <View style={styles.emojiWrapper}>
-              <Text style={styles.animalEmoji}>{char.emoji}</Text>
+              {char.emoji === '🐸' ? (
+                <CroakingFrog />
+              ) : (
+                <Text style={styles.animalEmoji}>{char.emoji}</Text>
+              )}
             </View>
           </View>
         ))}
       </View>
 
       {/* Bottom Sheet Card */}
-      <View style={[styles.bottomSheet, { backgroundColor: theme.cardBg }]}>
-        {/* Drag handle line indicator */}
-        <View style={[styles.dragHandle, { backgroundColor: theme.border }]} />
-
-        <View style={styles.sheetHeader}>
-          <Text style={[styles.sheetTitle, { color: theme.textDark }]}>오늘의 미션</Text>
-          <Text style={[styles.sheetProgress, { color: theme.textMuted }]}>
-            {completedCount}/{missions.length}
-          </Text>
+      <Animated.View
+        style={[
+          styles.bottomSheet,
+          glassSheetStyle,
+          {
+            transform: [{ translateY: sheetY }],
+          },
+        ]}
+      >
+        {/* Drag handle line indicator & Drag Area */}
+        <View {...panResponder.panHandlers} style={styles.sheetHeaderZone}>
+          <View style={[styles.dragHandle, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)' }]} />
+          <View style={styles.sheetHeader}>
+            <Text style={[styles.sheetTitle, { color: isDarkMode ? '#FFFFFF' : theme.textDark }]}>오늘의 미션</Text>
+            <Text style={[styles.sheetProgress, { color: isDarkMode ? '#A6A59E' : theme.textMuted }]}>
+              {completedCount}/{missions.length}
+            </Text>
+          </View>
         </View>
 
         {/* Mission Rows */}
@@ -166,19 +299,25 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           {missions.map((mission) => (
             <TouchableOpacity
               key={mission.id}
-              style={[styles.missionRow, { borderColor: theme.border }]}
+              style={[
+                styles.missionRow,
+                {
+                  backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : '#ffffff',
+                  borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : theme.border,
+                },
+              ]}
               onPress={() => handleToggleMission(mission.id)}
               activeOpacity={0.7}
             >
               <View style={styles.missionLeft}>
                 {/* Icon wrapper circular background */}
-                <View style={[styles.iconWrapper, { backgroundColor: '#E4F2E6' }]}>
+                <View style={[styles.iconWrapper, { backgroundColor: isDarkMode ? 'rgba(228, 242, 230, 0.15)' : '#E4F2E6' }]}>
                   <Text style={styles.iconEmoji}>{mission.emoji}</Text>
                 </View>
                 <Text
                   style={[
                     styles.missionTitleText,
-                    { color: theme.textDark },
+                    { color: isDarkMode ? '#FFFFFF' : theme.textDark },
                     mission.completed && styles.lineThrough,
                   ]}
                 >
@@ -187,7 +326,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               </View>
 
               <View style={styles.missionRight}>
-                <Text style={[styles.pointsText, { color: theme.textMuted }]}>
+                <Text style={[styles.pointsText, { color: isDarkMode ? '#A6A59E' : theme.textMuted }]}>
                   +{mission.points}
                 </Text>
 
@@ -195,7 +334,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                 <View
                   style={[
                     styles.checkbox,
-                    { borderColor: '#D3D2CC' },
+                    { borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : '#D3D2CC' },
                     mission.completed && { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
                   ]}
                 >
@@ -205,7 +344,78 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             </TouchableOpacity>
           ))}
         </ScrollView>
-      </View>
+      </Animated.View>
+
+      {/* Verification bottom sheet modal */}
+      <Modal
+        visible={isVerifyModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsVerifyModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalInnerContainer}>
+            {/* Options card */}
+            <View style={[styles.modalOptionsCard, glassModalCardStyle]}>
+              <Text style={[styles.modalTitleText, { color: isDarkMode ? '#C7C6BE' : '#8F8E84' }]}>무엇을 추가할까요?</Text>
+
+              {/* Option 1: Camera */}
+              <TouchableOpacity
+                style={styles.modalOptionRow}
+                onPress={handleCompleteVerification}
+              >
+                <View style={[styles.modalIconWrapper, { backgroundColor: isDarkMode ? 'rgba(235, 242, 232, 0.15)' : '#EBF2E8' }]}>
+                  <Text style={{ fontSize: 20 }}>📸</Text>
+                </View>
+                <View style={styles.modalTextGroup}>
+                  <Text style={[styles.modalOptionTitle, { color: isDarkMode ? '#FFFFFF' : theme.textDark }]}>검진 결과지 촬영</Text>
+                  <Text style={[styles.modalOptionDesc, { color: isDarkMode ? '#A6A59E' : theme.textMuted }]}>사진을 찍으면 수치를 자동 인식해요</Text>
+                </View>
+              </TouchableOpacity>
+
+              <View style={[styles.modalDivider, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : theme.border }]} />
+
+              {/* Option 2: Pencil */}
+              <TouchableOpacity
+                style={styles.modalOptionRow}
+                onPress={handleCompleteVerification}
+              >
+                <View style={[styles.modalIconWrapper, { backgroundColor: isDarkMode ? 'rgba(252, 243, 230, 0.15)' : '#FCF3E6' }]}>
+                  <Text style={{ fontSize: 20 }}>✍️</Text>
+                </View>
+                <View style={styles.modalTextGroup}>
+                  <Text style={[styles.modalOptionTitle, { color: isDarkMode ? '#FFFFFF' : theme.textDark }]}>직접 입력하기</Text>
+                  <Text style={[styles.modalOptionDesc, { color: isDarkMode ? '#A6A59E' : theme.textMuted }]}>수치를 손으로 입력할게요</Text>
+                </View>
+              </TouchableOpacity>
+
+              <View style={[styles.modalDivider, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : theme.border }]} />
+
+              {/* Option 3: Image */}
+              <TouchableOpacity
+                style={styles.modalOptionRow}
+                onPress={handleCompleteVerification}
+              >
+                <View style={[styles.modalIconWrapper, { backgroundColor: isDarkMode ? 'rgba(238, 244, 250, 0.15)' : '#EEF4FA' }]}>
+                  <Text style={{ fontSize: 20 }}>📄</Text>
+                </View>
+                <View style={styles.modalTextGroup}>
+                  <Text style={[styles.modalOptionTitle, { color: isDarkMode ? '#FFFFFF' : theme.textDark }]}>이미지 불러오기</Text>
+                  <Text style={[styles.modalOptionDesc, { color: isDarkMode ? '#A6A59E' : theme.textMuted }]}>저장된 스캔 파일에서 가져와요</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            {/* Cancel Card */}
+            <TouchableOpacity
+              style={[styles.modalCancelCard, glassModalCardStyle]}
+              onPress={() => setIsVerifyModalVisible(false)}
+            >
+              <Text style={[styles.modalCancelText, { color: isDarkMode ? '#FFFFFF' : '#8F8E84' }]}>취소</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* Level Up Celebration Modal */}
       <Modal
@@ -270,8 +480,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
-  sproutEmoji: {
-    fontSize: 22,
+  logoImage: {
+    width: 28,
+    height: 28,
+    resizeMode: 'contain',
   },
   logoText: {
     fontSize: 22,
@@ -335,15 +547,24 @@ const styles = StyleSheet.create({
     fontSize: 48,
   },
   bottomSheet: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 380,
     borderTopLeftRadius: 36,
     borderTopRightRadius: 36,
     paddingHorizontal: 24,
-    paddingBottom: 100,
+    paddingBottom: 40,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.05,
     shadowRadius: 10,
     elevation: 5,
+  },
+  sheetHeaderZone: {
+    paddingTop: 4,
+    paddingBottom: 10,
   },
   dragHandle: {
     width: 36,
@@ -472,5 +693,75 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '700',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'flex-end',
+    padding: 16,
+  },
+  modalInnerContainer: {
+    gap: 12,
+    marginBottom: Platform.OS === 'ios' ? 20 : 10,
+  },
+  modalOptionsCard: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    paddingVertical: 8,
+    borderWidth: 1,
+  },
+  modalTitleText: {
+    fontSize: 13,
+    fontWeight: '800',
+    textAlign: 'center',
+    marginVertical: 12,
+  },
+  modalOptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 16,
+  },
+  modalIconWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalTextGroup: {
+    flex: 1,
+    gap: 2,
+  },
+  modalOptionTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  modalOptionDesc: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  modalDivider: {
+    height: 1,
+  },
+  modalCancelCard: {
+    height: 54,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  modalCancelText: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  frogContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  frog: {
+    width: 60,
+    height: 60,
+    resizeMode: 'contain',
   },
 });

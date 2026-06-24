@@ -1,15 +1,18 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import Text from '@/components/Text';
-import { ArrowLeft } from 'lucide-react-native';
+import { ArrowLeft, Search, Moon, Sun, Bell } from 'lucide-react-native';
 import { COLORS, SPACING } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/types/navigation';
 
 interface ScreenHeaderProps {
   title?: string;
   /** Provide to render a back arrow on the left. */
   onBack?: () => void;
-  /** Custom element rendered on the right side (e.g. "건너뛰기"). */
+  /** Custom element rendered on the right side. If omitted, default action buttons are shown. */
   right?: React.ReactNode;
   /**
    * 'nav' = back arrow + centered title, used on stack/detail screens.
@@ -24,15 +27,36 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
   right,
   variant = 'nav',
 }) => {
-  const { isDarkMode } = useAppStore();
+  const { isDarkMode, toggleDarkMode } = useAppStore();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   if (variant === 'section') {
     return (
       <View style={[styles.sectionHeader, { borderBottomColor: theme.border }]}>
         <View style={styles.sectionHeaderLeft} />
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>{title}</Text>
-        <View style={styles.sectionHeaderRight}>{right}</View>
+        <Text style={[styles.sectionTitle, { color: theme.text }]} numberOfLines={1}>{title}</Text>
+        <View style={styles.sectionHeaderRight}>
+          {right ? (
+            right
+          ) : (
+            <View style={styles.headerActions}>
+              <TouchableOpacity onPress={() => navigation.navigate('SearchBrowse')} style={styles.actionBtn}>
+                <Search color={theme.text} size={20} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={toggleDarkMode} style={styles.actionBtn}>
+                {isDarkMode ? (
+                  <Sun color={theme.text} size={20} />
+                ) : (
+                  <Moon color={theme.text} size={20} />
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={styles.actionBtn}>
+                <Bell color={theme.text} size={20} />
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
       </View>
     );
   }
@@ -77,7 +101,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   sectionHeader: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
@@ -85,17 +109,26 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   sectionHeaderLeft: {
-    width: 40,
+    width: 100,
   },
   sectionHeaderRight: {
-    width: 40,
+    width: 100,
     alignItems: 'flex-end',
   },
   sectionTitle: {
+    flex: 1,
     fontSize: 18,
     fontWeight: '800',
     letterSpacing: -0.5,
     textAlign: 'center',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  actionBtn: {
+    padding: 4,
   },
 });
 

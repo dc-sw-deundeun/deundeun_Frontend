@@ -16,7 +16,10 @@ export default function SplashScreen({ navigation }: RootStackScreenProps<'Splas
         {/* Mock Character / Logo Graphic */}
         <View style={styles.logoContainer}>
           <View style={styles.characterContainer}>
-            <Text style={styles.characterEmoji}>🌱</Text>
+            <Image
+              source={require('../../assets/splash_Icon.png')}
+              style={styles.logoImage}
+            />
           </View>
           <Text style={[styles.title, { color: theme.text }]}>든든</Text>
           <Text style={[styles.subtitle, { color: theme.textMuted }]}>
@@ -75,8 +78,11 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-  characterEmoji: {
-    fontSize: 50,
+  logoImage: {
+    width: 100,
+    height: 100,
+    marginTop: 20,
+    resizeMode: 'contain',
   },
   title: {
     fontSize: 36,

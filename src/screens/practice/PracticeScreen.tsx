@@ -101,6 +101,29 @@ export default function PracticeScreen() {
   const { isDarkMode } = useAppStore();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
 
+  // Glassmorphism design styles preserving base colors
+  const glassCardStyle = {
+    backgroundColor: isDarkMode ? 'rgba(46, 48, 35, 0.5)' : 'rgba(255, 255, 255, 0.3)',
+    borderWidth: 1,
+    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.75)',
+    shadowColor: isDarkMode ? '#000000' : '#1C2E21',
+    shadowOpacity: isDarkMode ? 0.12 : 0.05,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  };
+
+  const glassBannerStyle = {
+    backgroundColor: isDarkMode ? 'rgba(35, 48, 33, 0.65)' : 'rgba(53, 75, 51, 0.5)',
+    borderWidth: 1,
+    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.3)',
+    shadowColor: isDarkMode ? '#000000' : '#1C2E21',
+    shadowOpacity: isDarkMode ? 0.12 : 0.06,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  };
+
   // ScrollView Ref
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -216,21 +239,16 @@ export default function PracticeScreen() {
         contentContainerStyle={styles.scrollContainer} 
         showsVerticalScrollIndicator={false}
       >
-        {/* Screen Header with custom Fox Avatar */}
+        {/* Screen Header with Search, Dark Mode, and Bell actions */}
         <ScreenHeader
           title="매일의 실천"
           variant="section"
-          right={
-            <View style={styles.headerFoxContainer}>
-              <Text style={{ fontSize: 22 }}>🦊</Text>
-              <View style={styles.foxDot} />
-            </View>
-          }
         />
 
         <View style={styles.scrollContent}>
           {/* 1. 이번 주 기록 Card */}
-          <View style={[styles.card, { backgroundColor: theme.card, shadowColor: isDarkMode ? '#000000' : '#1C2E21', shadowOpacity: isDarkMode ? 0.3 : 0.04 }]}>
+          <View style={[styles.card, glassCardStyle]}>
+            <View style={styles.glassShine} pointerEvents="none" />
             <View style={styles.cardHeaderRow}>
               <Text style={[styles.cardTitle, { color: theme.text }]}>이번 주 기록</Text>
               <View style={[styles.streakBadge, { backgroundColor: '#FCF3E6' }]}>
@@ -288,15 +306,9 @@ export default function PracticeScreen() {
               return (
                 <View
                   key={mission.id}
-                  style={[
-                    styles.missionCard,
-                    {
-                      backgroundColor: theme.card,
-                      shadowColor: isDarkMode ? '#000000' : '#1C2E21',
-                      shadowOpacity: isDarkMode ? 0.3 : 0.04,
-                    }
-                  ]}
+                  style={[styles.missionCard, glassCardStyle]}
                 >
+                  <View style={styles.glassShine} pointerEvents="none" />
                   {/* Left accent vertical line */}
                   <View style={[styles.cardLeftAccent, { backgroundColor: accentColor }]} />
 
@@ -339,7 +351,8 @@ export default function PracticeScreen() {
           </View>
 
           {/* 3. 주간 미션 달성 현황 Banner */}
-          <View style={[styles.achievementCard, { backgroundColor: '#354B33' }]}>
+          <View style={[styles.achievementCard, glassBannerStyle]}>
+            <View style={styles.glassShine} pointerEvents="none" />
             <Text style={styles.achievementTitle}>주간 미션 달성 현황</Text>
             <View style={styles.achievementPill}>
               <Text style={styles.achievementPillText}>★ 상위 5% 달성 중</Text>
@@ -347,7 +360,8 @@ export default function PracticeScreen() {
           </View>
 
           {/* 4. 월간 활동 현황 Calendar Card (Expands smoothly to show details inline) */}
-          <View style={[styles.card, { backgroundColor: theme.card, shadowColor: isDarkMode ? '#000000' : '#1C2E21', shadowOpacity: isDarkMode ? 0.3 : 0.04 }]}>
+          <View style={[styles.card, glassCardStyle]}>
+            <View style={styles.glassShine} pointerEvents="none" />
             <View style={[styles.cardHeaderRow, { marginBottom: SPACING.md }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <Calendar color={theme.text} size={20} />
@@ -544,9 +558,7 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 24,
     padding: SPACING.lg,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 16,
-    elevation: 3,
+    overflow: 'hidden',
   },
   cardHeaderRow: {
     flexDirection: 'row',
@@ -677,6 +689,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     height: 48,
     borderRadius: 24,
+    overflow: 'hidden',
   },
   achievementTitle: {
     color: '#ffffff',
@@ -888,5 +901,14 @@ const styles = StyleSheet.create({
   dayDetailBadgeText: {
     fontSize: 11,
     fontWeight: '800',
+  },
+  glassShine: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: '50%',
+    height: '250%',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    transform: [{ rotate: '25deg' }, { translateX: 20 }, { translateY: -40 }],
   },
 });

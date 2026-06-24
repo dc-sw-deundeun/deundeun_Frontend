@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, ScrollView, Modal, Alert } from 'react-native';
 import Text from '@/components/Text';
+import Card from '@/components/Card';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -74,7 +75,7 @@ export default function SearchBrowseScreen({ navigation }: RootStackScreenProps<
           /* Search Results Screen State */
           <View style={styles.resultsState}>
             {/* Main Result Card */}
-            <View style={[styles.resultCard, { backgroundColor: theme.card, shadowColor: isDarkMode ? '#000000' : '#1C2E21', shadowOpacity: isDarkMode ? 0.3 : 0.04 }]}>
+            <Card style={styles.resultCard}>
               <Text style={[styles.resultCategory, { color: COLORS.primary }]}>건강 사전</Text>
               <Text style={[styles.resultTitle, { color: theme.text }]}>{query}이란?</Text>
               <Text style={[styles.resultBody, { color: theme.textMuted }]}>
@@ -82,10 +83,10 @@ export default function SearchBrowseScreen({ navigation }: RootStackScreenProps<
                   ? '혈관 건강을 측정하는 가장 대표적인 지방 성분 수치입니다. 세포막을 구성하고 호르몬을 생성하는 데 중요하지만, 수치가 너무 높으면 동맥경화 등의 원인이 될 수 있습니다.'
                   : `몸에서 일어나는 신진대사 및 혈관/내분비계 장기 수치입니다. 관리 실천(식이섬유 섭취, 운동)을 통해 수치를 안전하게 조절할 수 있습니다.`}
               </Text>
-            </View>
+            </Card>
 
             {/* My Stats Card */}
-            <View style={[styles.myStatsCard, { backgroundColor: theme.card, shadowColor: isDarkMode ? '#000000' : '#1C2E21', shadowOpacity: isDarkMode ? 0.3 : 0.04 }]}>
+            <Card style={styles.myStatsCard} padding={SPACING.md} radius={20}>
               <View style={styles.statsLeft}>
                 <Text style={[styles.statsLabel, { color: theme.textMuted }]}>내 {query} 최근 기록</Text>
                 <Text style={[styles.statsValue, { color: theme.text }]}>
@@ -98,7 +99,7 @@ export default function SearchBrowseScreen({ navigation }: RootStackScreenProps<
               >
                 <Text style={[styles.statsLinkText, { color: COLORS.primaryDark }]}>최근 분석 보기</Text>
               </TouchableOpacity>
-            </View>
+            </Card>
 
             {/* Explanation Sheet Trigger Card */}
             <TouchableOpacity
@@ -247,12 +248,7 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
   },
   resultCard: {
-    borderRadius: 24,
-    padding: SPACING.lg,
     gap: SPACING.sm,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 16,
-    elevation: 3,
   },
   resultCategory: {
     fontSize: 12,
@@ -272,11 +268,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: SPACING.md,
-    borderRadius: 20,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 12,
-    elevation: 2,
   },
   statsLeft: {
     gap: 2,
