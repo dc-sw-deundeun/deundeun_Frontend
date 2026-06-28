@@ -7,6 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronRight, User, Link, Bell, Lock } from 'lucide-react-native';
 import ScreenHeader from '@/components/ScreenHeader';
 import Card from '@/components/Card';
+import { storage } from '@/utils/storage';
+import { setAccessToken } from '@/api';
 
 // Navigation types
 import { CompositeScreenProps } from '@react-navigation/native';
@@ -148,7 +150,17 @@ export default function MyPageScreen({ navigation }: MyPageScreenProps) {
         </View>
 
         {/* Footer logout */}
-        <TouchableOpacity style={styles.logoutBtn} onPress={() => navigation.navigate('Splash')}>
+        <TouchableOpacity 
+          style={styles.logoutBtn} 
+          onPress={async () => {
+            await storage.clearTokens();
+            setAccessToken(null);
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Splash' }],
+            });
+          }}
+        >
           <Text style={styles.logoutText}>로그아웃</Text>
         </TouchableOpacity>
         </View>

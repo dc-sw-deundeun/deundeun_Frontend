@@ -1,14 +1,41 @@
-import React from 'react';
-import { StyleSheet, View, TouchableOpacity, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import Text from '@/components/Text';
 import { RootStackScreenProps } from '@/types/navigation';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppStore } from '@/store/useAppStore';
+import { storage } from '@/utils/storage';
+import { setAccessToken } from '@/api';
 
 export default function SplashScreen({ navigation }: RootStackScreenProps<'Splash'>) {
   const { isDarkMode } = useAppStore();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
+  const [isCheckingAutoLogin, setIsCheckingAutoLogin] = useState(true);
+
+  useEffect(() => {
+    const checkAutoLogin = async () => {
+      const token = await storage.getAccessToken();
+      if (token) {
+        setAccessToken(token);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'MainTabs', params: { screen: 'Home' } }],
+        });
+      } else {
+        setIsCheckingAutoLogin(false);
+      }
+    };
+    checkAutoLogin();
+  }, [navigation]);
+
+  if (isCheckingAutoLogin) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -30,18 +57,9 @@ export default function SplashScreen({ navigation }: RootStackScreenProps<'Splas
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[styles.primaryButton, { backgroundColor: COLORS.primary }]}
-            onPress={() => navigation.navigate('Terms')}
-          >
-            <Text style={styles.primaryButtonText}>시작하기</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.secondaryButton}
             onPress={() => navigation.navigate('Login')}
           >
-            <Text style={[styles.secondaryButtonText, { color: theme.textMuted }]}>
-              이미 계정이 있어요
-            </Text>
+            <Text style={styles.primaryButtonText}>시작하기</Text>
           </TouchableOpacity>
         </View>
       </View>
