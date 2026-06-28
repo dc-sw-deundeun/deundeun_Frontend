@@ -1,14 +1,6 @@
 import React, { useRef } from 'react';
-import { 
-  Text, 
-  StyleSheet, 
-  Pressable, 
-  Animated, 
-  ActivityIndicator, 
-  StyleProp, 
-  ViewStyle, 
-  TextStyle 
-} from 'react-native';
+import { StyleSheet, Pressable, Animated, ActivityIndicator, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import Text from '@/components/Text';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/constants/theme';
 
 interface ButtonProps {
@@ -153,8 +145,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary,
   },
   disabled: {
-    backgroundColor: '#e2e8f0',
-    borderColor: '#e2e8f0',
+    backgroundColor: COLORS.light.disabledBg,
+    borderColor: COLORS.light.disabledBg,
   },
   // Text Styles
   text: {
@@ -180,7 +172,7 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
   },
   textDisabled: {
-    color: '#94a3b8',
+    color: COLORS.light.disabledText,
   },
 });
 
