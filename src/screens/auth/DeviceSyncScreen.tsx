@@ -18,6 +18,7 @@ export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'D
 
   const handleSync = async (appName: string) => {
     if (syncedApps.includes(appName)) return;
+    
     setConnectingApp(appName);
 
     let provider: WearableProvider = 'SAMSUNG_HEALTH';
@@ -30,10 +31,18 @@ export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'D
         provider: provider,
       });
       setSyncedApps((prev) => [...prev, appName]);
+      
+      // 연동 성공 후 사용자에게 체크 표시를 잠깐 보여준 뒤 자동 이동
+      setTimeout(() => {
+        navigation.navigate('CheckupOcr');
+      }, 700);
     } catch (e) {
       console.warn('Failed to connect wearable', e);
       // Simulate success for local dev if API fails
       setSyncedApps((prev) => [...prev, appName]);
+      setTimeout(() => {
+        navigation.navigate('CheckupOcr');
+      }, 700);
     } finally {
       setConnectingApp(null);
     }
@@ -47,19 +56,26 @@ export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'D
         title="기기 연동"
         onBack={() => navigation.goBack()}
         right={
-          <TouchableOpacity 
-            onPress={async () => {
-              try {
-                await onboardingApi.connectWearable({ action: 'SKIP' });
-              } catch (e) {
-                console.warn('Skip API error', e);
-              }
-              navigation.navigate('CheckupOcr');
-            }} 
-            style={styles.skipButton}
-          >
-            <Text style={[styles.skipButtonText, { color: theme.textMuted }]}>건너뛰기</Text>
-          </TouchableOpacity>
+          !isAnySynced ? (
+            <TouchableOpacity 
+              onPress={async () => {
+                if (syncedApps.length > 0) {
+                  // 이미 연동했다면 SKIP API를 부르지 않고(409 방지) 바로 이동
+                  navigation.navigate('CheckupOcr');
+                  return;
+                }
+                try {
+                  await onboardingApi.connectWearable({ action: 'SKIP' });
+                } catch (e) {
+                  console.warn('Skip API error', e);
+                }
+                navigation.navigate('CheckupOcr');
+              }} 
+              style={styles.skipButton}
+            >
+              <Text style={[styles.skipButtonText, { color: theme.textMuted }]}>건너뛰기</Text>
+            </TouchableOpacity>
+          ) : undefined
         }
       />
 
@@ -85,10 +101,11 @@ export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'D
               {
                 backgroundColor: theme.card,
                 borderColor: syncedApps.includes('Samsung') ? COLORS.primary : theme.border,
+                opacity: isAnySynced && !syncedApps.includes('Samsung') ? 0.4 : 1,
               },
             ]}
             onPress={() => handleSync('Samsung')}
-            disabled={connectingApp !== null}
+            disabled={connectingApp !== null || (isAnySynced && !syncedApps.includes('Samsung'))}
           >
             <View style={styles.cardLeft}>
               <View style={[styles.iconWrapper, { backgroundColor: '#E8F5E9' }]}>
@@ -119,10 +136,11 @@ export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'D
               {
                 backgroundColor: theme.card,
                 borderColor: syncedApps.includes('Apple') ? COLORS.primary : theme.border,
+                opacity: isAnySynced && !syncedApps.includes('Apple') ? 0.4 : 1,
               },
             ]}
             onPress={() => handleSync('Apple')}
-            disabled={connectingApp !== null}
+            disabled={connectingApp !== null || (isAnySynced && !syncedApps.includes('Apple'))}
           >
             <View style={styles.cardLeft}>
               <View style={[styles.iconWrapper, { backgroundColor: '#FFEBEE' }]}>
@@ -153,10 +171,11 @@ export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'D
               {
                 backgroundColor: theme.card,
                 borderColor: syncedApps.includes('Google') ? COLORS.primary : theme.border,
+                opacity: isAnySynced && !syncedApps.includes('Google') ? 0.4 : 1,
               },
             ]}
             onPress={() => handleSync('Google')}
-            disabled={connectingApp !== null}
+            disabled={connectingApp !== null || (isAnySynced && !syncedApps.includes('Google'))}
           >
             <View style={styles.cardLeft}>
               <View style={[styles.iconWrapper, { backgroundColor: '#E3F2FD' }]}>

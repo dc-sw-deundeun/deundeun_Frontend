@@ -9,7 +9,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Plus, X, Camera as CameraIcon, Power, PowerOff } from 'lucide-react-native';
 import ScreenHeader from '@/components/ScreenHeader';
-import { recordsApi } from '@/api';
+import { recordsApi, onboardingApi } from '@/api';
 
 export default function CheckupOcrScreen({ navigation }: RootStackScreenProps<'CheckupOcr'>) {
   const { isDarkMode } = useAppStore();
@@ -20,7 +20,7 @@ export default function CheckupOcrScreen({ navigation }: RootStackScreenProps<'C
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(true);
   const [showToast, setShowToast] = useState(false);
-  
+
   const cameraRef = useRef<any>(null);
 
   // 로딩 애니메이션
@@ -145,7 +145,7 @@ export default function CheckupOcrScreen({ navigation }: RootStackScreenProps<'C
   const handleNext = async () => {
     if (images.length === 0) return;
     setIsProcessing(true);
-    
+
     try {
       const cleanBase64 = (rawBase64: string) => {
         if (rawBase64.includes('base64,')) {
@@ -162,7 +162,7 @@ export default function CheckupOcrScreen({ navigation }: RootStackScreenProps<'C
     } catch (error) {
       setIsProcessing(false);
       console.warn('OCR 처리 실패:', error);
-      navigation.navigate('CheckupResult', { 
+      navigation.navigate('CheckupResult', {
         data: {
           metrics: [
             { metric_code: 'FastingBloodSugar', metric_name: '공복혈당', value: 92, unit: 'mg/dL', status: 'NORMAL' },
@@ -185,7 +185,7 @@ export default function CheckupOcrScreen({ navigation }: RootStackScreenProps<'C
   if (!cameraPermission) {
     return <View style={styles.container} />;
   }
-  
+
   if (isProcessing) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background, justifyContent: 'center', alignItems: 'center' }]}>
@@ -198,15 +198,25 @@ export default function CheckupOcrScreen({ navigation }: RootStackScreenProps<'C
     );
   }
 
-  const buttonColor = '#475C3A'; 
+  const buttonColor = '#475C3A';
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: '#F5F4EE' }]}>
-      <ScreenHeader 
-        title="결과지 촬영" 
+      <ScreenHeader
+        title="결과지 촬영"
         onBack={() => navigation.goBack()}
         right={
-          <TouchableOpacity onPress={() => navigation.navigate('CheckupResult', { data: {} })}>
+          <TouchableOpacity onPress={async () => {
+            setIsProcessing(true);
+            try {
+              await onboardingApi.completeOnboarding();
+            } catch (e) {
+              console.warn('Complete Onboarding Error:', e);
+            } finally {
+              setIsProcessing(false);
+              navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
+            }
+          }}>
             <Text style={{ color: '#B3B0A5', fontSize: 14, fontWeight: '500', marginRight: SPACING.sm }} numberOfLines={1}>건너뛰기</Text>
           </TouchableOpacity>
         }
@@ -224,8 +234,8 @@ export default function CheckupOcrScreen({ navigation }: RootStackScreenProps<'C
           {/* Camera Container */}
           <View style={styles.cameraContainer}>
             {cameraPermission.granted && isCameraActive ? (
-              <CameraView 
-                style={styles.camera} 
+              <CameraView
+                style={styles.camera}
                 facing="back"
                 ref={cameraRef}
               >
@@ -242,18 +252,18 @@ export default function CheckupOcrScreen({ navigation }: RootStackScreenProps<'C
                   <View style={[styles.corner, styles.bottomRight]} />
 
                   {/* Scanning UX Line */}
-                  <Animated.View 
+                  <Animated.View
                     style={[
-                      styles.scanLineAnim, 
-                      { 
-                        transform: [{ 
+                      styles.scanLineAnim,
+                      {
+                        transform: [{
                           translateY: scanLineAnim.interpolate({
                             inputRange: [0, 1],
                             outputRange: [24, 280] // From top to near bottom inside the square
-                          }) 
-                        }] 
+                          })
+                        }]
                       }
-                    ]} 
+                    ]}
                   />
 
                   {/* Take Picture Hidden Button (Full screen touch area over camera) */}
@@ -278,8 +288,8 @@ export default function CheckupOcrScreen({ navigation }: RootStackScreenProps<'C
           </View>
 
           {/* Upload Box */}
-          <TouchableOpacity 
-            style={styles.uploadBox} 
+          <TouchableOpacity
+            style={styles.uploadBox}
             onPress={handlePickImage}
           >
             <Plus color="#ffffff" size={16} strokeWidth={2.5} />
@@ -300,8 +310,8 @@ export default function CheckupOcrScreen({ navigation }: RootStackScreenProps<'C
                         <Image source={{ uri: img }} style={styles.uploadedThumbnail} />
                         <Text style={styles.uploadedItemName}>검진지 이미지 {index + 1}</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity 
-                        style={styles.uploadedDeleteBtn} 
+                      <TouchableOpacity
+                        style={styles.uploadedDeleteBtn}
                         onPress={() => removeImage(index)}
                       >
                         <X color="#808080" size={20} />
@@ -318,7 +328,7 @@ export default function CheckupOcrScreen({ navigation }: RootStackScreenProps<'C
         <View style={styles.bottomSection}>
           <TouchableOpacity
             style={[
-              styles.submitButton, 
+              styles.submitButton,
               { backgroundColor: images.length > 0 ? buttonColor : '#C5C5C5' }
             ]}
             disabled={images.length === 0}
@@ -347,7 +357,7 @@ const styles = StyleSheet.create({
   cameraContainer: {
     width: '100%',
     height: 320,
-    backgroundColor: '#1E1E1C', 
+    backgroundColor: '#1E1E1C',
     borderRadius: 20,
     overflow: 'hidden',
     marginBottom: SPACING.md,
@@ -358,7 +368,7 @@ const styles = StyleSheet.create({
   },
   cameraOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.1)', 
+    backgroundColor: 'rgba(0,0,0,0.1)',
   },
   cameraToggleBtn: {
     position: 'absolute',
@@ -376,7 +386,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 28,
     height: 28,
-    borderColor: '#98C353', 
+    borderColor: '#98C353',
     borderWidth: 2.5,
     pointerEvents: 'none',
   },
@@ -454,7 +464,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     height: 72,
-    backgroundColor: '#C5C5C5', 
+    backgroundColor: '#C5C5C5',
     borderRadius: 12,
     borderWidth: 1.5,
     borderColor: '#A8A8A8',
@@ -465,7 +475,7 @@ const styles = StyleSheet.create({
   uploadText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ffffff', 
+    color: '#ffffff',
   },
   uploadedListContainer: {
     marginBottom: SPACING.lg,

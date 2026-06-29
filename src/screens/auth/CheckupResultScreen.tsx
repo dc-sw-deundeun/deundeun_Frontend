@@ -11,7 +11,7 @@ import { recordsApi, MetricItem, onboardingApi } from '@/api';
 export default function CheckupResultScreen({ route, navigation }: RootStackScreenProps<'CheckupResult'>) {
   const { isDarkMode } = useAppStore();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
-  
+
   const [metrics, setMetrics] = useState<MetricItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -43,7 +43,7 @@ export default function CheckupResultScreen({ route, navigation }: RootStackScre
       }));
 
       // 2단계: 결과 저장 및 레코드 생성 (Commit)
-      const commitRes = await recordsApi.commitCheckup({ 
+      const commitRes = await recordsApi.commitCheckup({
         ocr_status,
         failed_pages,
         content_hash,
@@ -61,7 +61,7 @@ export default function CheckupResultScreen({ route, navigation }: RootStackScre
 
       // 4단계: 온보딩 최종 완료 처리
       await onboardingApi.completeOnboarding();
-      
+
       setIsLoading(false);
       navigation.reset({
         index: 0,
