@@ -16,6 +16,8 @@ import LoginScreen from '@/screens/auth/LoginScreen';
 import RegisterScreen from '@/screens/auth/RegisterScreen';
 import TermsScreen from '@/screens/auth/TermsScreen';
 import DeviceSyncScreen from '@/screens/auth/DeviceSyncScreen';
+import CheckupOcrScreen from '@/screens/auth/CheckupOcrScreen';
+import CheckupResultScreen from '@/screens/auth/CheckupResultScreen';
 import WelcomeScreen from '@/screens/auth/WelcomeScreen';
 
 import HomeScreen from '@/screens/HomeScreen';
@@ -202,7 +204,7 @@ const CustomFloatingButton = ({ children, label, isFocused, onPress }: any) => {
           {children}
         </Animated.View>
       </Pressable>
-      
+
       {/* Home text label aligning with other tab labels */}
       <Text style={[styles.tabLabel, { color: labelColor, fontWeight: '800', marginTop: 3, zIndex: 5 }]}>
         {label}
@@ -327,6 +329,8 @@ export const AppNavigator = () => {
         <Stack.Screen name="Terms" component={TermsScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="DeviceSync" component={DeviceSyncScreen} />
+        <Stack.Screen name="CheckupOcr" component={CheckupOcrScreen} />
+        <Stack.Screen name="CheckupResult" component={CheckupResultScreen} />
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
 
         {/* Authenticated Flow Tab Navigation */}

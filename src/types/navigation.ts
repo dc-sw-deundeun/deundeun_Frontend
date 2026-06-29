@@ -15,6 +15,10 @@ export type RootStackParamList = {
   Register: undefined;
   Terms: undefined;
   DeviceSync: undefined;
+  CheckupOcr: undefined;
+  CheckupResult: {
+    data?: any; // To pass OCR results
+  };
   Welcome: undefined;
   MainTabs: NavigatorScreenParams<MainTabParamList>;
   Details: {
@@ -35,6 +39,6 @@ export type RootStackParamList = {
   Notifications: undefined;
 };
 
-export type RootStackScreenProps<T extends keyof RootStackParamList> = 
+export type RootStackScreenProps<T extends keyof RootStackParamList> =
   NativeStackScreenProps<RootStackParamList, T>;
 
