@@ -35,134 +35,134 @@ export default function MyPageScreen({ navigation }: MyPageScreenProps) {
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         <ScreenHeader title="마이페이지" variant="section" />
         <View style={styles.scrollContent}>
-        {/* Profile Card */}
-        <Card style={styles.profileCard} radius={24}>
-          <View style={[styles.avatarCircle, { backgroundColor: COLORS.primaryLight }]}>
-            <Text style={{ fontSize: 32 }}>🥬</Text>
-          </View>
-          <View>
-            <Text style={[styles.profileName, { color: theme.text }]}>김영순 님</Text>
-            <Text style={[styles.profileEmail, { color: theme.textMuted }]}>youngsoon@deundeun.kr</Text>
-          </View>
-        </Card>
-
-        {/* Account Settings Menu */}
-        <View style={styles.menuGroup}>
-          <Text style={[styles.groupTitle, { color: theme.textMuted }]}>계정 및 보안</Text>
-
-          <Card style={styles.menuList} padding={0}>
-            <TouchableOpacity style={styles.menuItem}>
-              <View style={styles.menuItemLeft}>
-                <User size={18} color={theme.text} />
-                <Text style={[styles.menuItemText, { color: theme.text }]}>내 정보</Text>
-              </View>
-              <ChevronRight size={18} color={theme.textMuted} />
-            </TouchableOpacity>
-
-            <View style={[styles.itemDivider, { backgroundColor: theme.border }]} />
-
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => navigation.navigate('ChangePassword')}
-            >
-              <View style={styles.menuItemLeft}>
-                <Lock size={18} color={theme.text} />
-                <Text style={[styles.menuItemText, { color: theme.text }]}>비밀번호 변경</Text>
-              </View>
-              <ChevronRight size={18} color={theme.textMuted} />
-            </TouchableOpacity>
-
-            <View style={[styles.itemDivider, { backgroundColor: theme.border }]} />
-
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => navigation.navigate('ConnectedApps')}
-            >
-              <View style={styles.menuItemLeft}>
-                <Link size={18} color={theme.text} />
-                <Text style={[styles.menuItemText, { color: theme.text }]}>연동 앱 관리</Text>
-              </View>
-              <ChevronRight size={18} color={theme.textMuted} />
-            </TouchableOpacity>
-          </Card>
-        </View>
-
-        {/* Notifications toggles */}
-        <View style={styles.menuGroup}>
-          <Text style={[styles.groupTitle, { color: theme.textMuted }]}>알림 설정</Text>
-
-          <Card style={styles.menuList} padding={0}>
-            {/* Toggle 1 */}
-            <View style={styles.toggleItem}>
-              <View style={styles.toggleItemLeft}>
-                <Bell size={18} color={theme.text} />
-                <View>
-                  <Text style={[styles.toggleTitle, { color: theme.text }]}>식단 기록 알림</Text>
-                  <Text style={[styles.toggleDesc, { color: theme.textMuted }]}>식사 전후 기록을 리마인드 해드려요</Text>
-                </View>
-              </View>
-              <Switch
-                value={dietAlert}
-                onValueChange={setDietAlert}
-                trackColor={{ false: theme.border, true: COLORS.primary }}
-                thumbColor="#ffffff"
-              />
+          {/* Profile Card */}
+          <Card style={styles.profileCard} radius={24}>
+            <View style={[styles.avatarCircle, { backgroundColor: COLORS.primaryLight }]}>
+              <Text style={{ fontSize: 32 }}>🥬</Text>
             </View>
-
-            <View style={[styles.itemDivider, { backgroundColor: theme.border }]} />
-
-            {/* Toggle 2 */}
-            <View style={styles.toggleItem}>
-              <View style={styles.toggleItemLeft}>
-                <Bell size={18} color={theme.text} />
-                <View>
-                  <Text style={[styles.toggleTitle, { color: theme.text }]}>미션 리마인드</Text>
-                  <Text style={[styles.toggleDesc, { color: theme.textMuted }]}>오늘 해야 할 미션을 알림으로 알려요</Text>
-                </View>
-              </View>
-              <Switch
-                value={missionAlert}
-                onValueChange={setMissionAlert}
-                trackColor={{ false: theme.border, true: COLORS.primary }}
-                thumbColor="#ffffff"
-              />
-            </View>
-
-            <View style={[styles.itemDivider, { backgroundColor: theme.border }]} />
-
-            {/* Toggle 3 */}
-            <View style={styles.toggleItem}>
-              <View style={styles.toggleItemLeft}>
-                <Bell size={18} color={theme.text} />
-                <View>
-                  <Text style={[styles.toggleTitle, { color: theme.text }]}>주간 리포트</Text>
-                  <Text style={[styles.toggleDesc, { color: theme.textMuted }]}>매주 월요일 건강 실천 결과를 요약 제공해요</Text>
-                </View>
-              </View>
-              <Switch
-                value={weeklyReport}
-                onValueChange={setWeeklyReport}
-                trackColor={{ false: theme.border, true: COLORS.primary }}
-                thumbColor="#ffffff"
-              />
+            <View>
+              <Text style={[styles.profileName, { color: theme.text }]}>김영순 님</Text>
+              <Text style={[styles.profileEmail, { color: theme.textMuted }]}>youngsoon@deundeun.kr</Text>
             </View>
           </Card>
-        </View>
 
-        {/* Footer logout */}
-        <TouchableOpacity 
-          style={styles.logoutBtn} 
-          onPress={async () => {
-            await storage.clearTokens();
-            setAccessToken(null);
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Splash' }],
-            });
-          }}
-        >
-          <Text style={styles.logoutText}>로그아웃</Text>
-        </TouchableOpacity>
+          {/* Account Settings Menu */}
+          <View style={styles.menuGroup}>
+            <Text style={[styles.groupTitle, { color: theme.textMuted }]}>계정 및 보안</Text>
+
+            <Card style={styles.menuList} padding={0}>
+              <TouchableOpacity style={styles.menuItem}>
+                <View style={styles.menuItemLeft}>
+                  <User size={18} color={theme.text} />
+                  <Text style={[styles.menuItemText, { color: theme.text }]}>내 정보</Text>
+                </View>
+                <ChevronRight size={18} color={theme.textMuted} />
+              </TouchableOpacity>
+
+              <View style={[styles.itemDivider, { backgroundColor: theme.border }]} />
+
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => navigation.navigate('ChangePassword')}
+              >
+                <View style={styles.menuItemLeft}>
+                  <Lock size={18} color={theme.text} />
+                  <Text style={[styles.menuItemText, { color: theme.text }]}>비밀번호 변경</Text>
+                </View>
+                <ChevronRight size={18} color={theme.textMuted} />
+              </TouchableOpacity>
+
+              <View style={[styles.itemDivider, { backgroundColor: theme.border }]} />
+
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => navigation.navigate('ConnectedApps')}
+              >
+                <View style={styles.menuItemLeft}>
+                  <Link size={18} color={theme.text} />
+                  <Text style={[styles.menuItemText, { color: theme.text }]}>연동 앱 관리</Text>
+                </View>
+                <ChevronRight size={18} color={theme.textMuted} />
+              </TouchableOpacity>
+            </Card>
+          </View>
+
+          {/* Notifications toggles */}
+          <View style={styles.menuGroup}>
+            <Text style={[styles.groupTitle, { color: theme.textMuted }]}>알림 설정</Text>
+
+            <Card style={styles.menuList} padding={0}>
+              {/* Toggle 1 */}
+              <View style={styles.toggleItem}>
+                <View style={styles.toggleItemLeft}>
+                  <Bell size={18} color={theme.text} />
+                  <View>
+                    <Text style={[styles.toggleTitle, { color: theme.text }]}>식단 기록 알림</Text>
+                    <Text style={[styles.toggleDesc, { color: theme.textMuted }]}>식사 전후 기록을 리마인드 해드려요</Text>
+                  </View>
+                </View>
+                <Switch
+                  value={dietAlert}
+                  onValueChange={setDietAlert}
+                  trackColor={{ false: theme.border, true: COLORS.primary }}
+                  thumbColor="#ffffff"
+                />
+              </View>
+
+              <View style={[styles.itemDivider, { backgroundColor: theme.border }]} />
+
+              {/* Toggle 2 */}
+              <View style={styles.toggleItem}>
+                <View style={styles.toggleItemLeft}>
+                  <Bell size={18} color={theme.text} />
+                  <View>
+                    <Text style={[styles.toggleTitle, { color: theme.text }]}>미션 리마인드</Text>
+                    <Text style={[styles.toggleDesc, { color: theme.textMuted }]}>오늘 해야 할 미션을 알림으로 알려요</Text>
+                  </View>
+                </View>
+                <Switch
+                  value={missionAlert}
+                  onValueChange={setMissionAlert}
+                  trackColor={{ false: theme.border, true: COLORS.primary }}
+                  thumbColor="#ffffff"
+                />
+              </View>
+
+              <View style={[styles.itemDivider, { backgroundColor: theme.border }]} />
+
+              {/* Toggle 3 */}
+              <View style={styles.toggleItem}>
+                <View style={styles.toggleItemLeft}>
+                  <Bell size={18} color={theme.text} />
+                  <View>
+                    <Text style={[styles.toggleTitle, { color: theme.text }]}>주간 리포트</Text>
+                    <Text style={[styles.toggleDesc, { color: theme.textMuted }]}>매주 월요일 건강 실천 결과를 요약 제공해요</Text>
+                  </View>
+                </View>
+                <Switch
+                  value={weeklyReport}
+                  onValueChange={setWeeklyReport}
+                  trackColor={{ false: theme.border, true: COLORS.primary }}
+                  thumbColor="#ffffff"
+                />
+              </View>
+            </Card>
+          </View>
+
+          {/* Footer logout */}
+          <TouchableOpacity
+            style={styles.logoutBtn}
+            onPress={async () => {
+              await storage.clearTokens();
+              setAccessToken(null);
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Splash' }],
+              });
+            }}
+          >
+            <Text style={styles.logoutText}>로그아웃</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>

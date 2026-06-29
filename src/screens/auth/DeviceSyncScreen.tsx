@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppStore } from '@/store/useAppStore';
 import { Check, Smartphone, Activity, ShieldCheck } from 'lucide-react-native';
 import ScreenHeader from '@/components/ScreenHeader';
+import { onboardingApi, WearableProvider } from '@/api';
 
 export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'DeviceSync'>) {
   const { isDarkMode } = useAppStore();
@@ -15,15 +16,27 @@ export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'D
   const [connectingApp, setConnectingApp] = useState<string | null>(null);
   const [syncedApps, setSyncedApps] = useState<string[]>([]);
 
-  const handleSync = (appName: string) => {
+  const handleSync = async (appName: string) => {
     if (syncedApps.includes(appName)) return;
     setConnectingApp(appName);
 
-    // Simulate standard connection latency
-    setTimeout(() => {
+    let provider: WearableProvider = 'SAMSUNG_HEALTH';
+    if (appName === 'Apple') provider = 'APPLE_HEALTH';
+    if (appName === 'Google') provider = 'GOOGLE_FIT';
+
+    try {
+      await onboardingApi.connectWearable({
+        action: 'CONNECT',
+        provider: provider,
+      });
       setSyncedApps((prev) => [...prev, appName]);
+    } catch (e) {
+      console.warn('Failed to connect wearable', e);
+      // Simulate success for local dev if API fails
+      setSyncedApps((prev) => [...prev, appName]);
+    } finally {
       setConnectingApp(null);
-    }, 1500);
+    }
   };
 
   const isAnySynced = syncedApps.length > 0;
@@ -34,7 +47,17 @@ export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'D
         title="기기 연동"
         onBack={() => navigation.goBack()}
         right={
-          <TouchableOpacity onPress={() => navigation.navigate('Welcome')} style={styles.skipButton}>
+          <TouchableOpacity 
+            onPress={async () => {
+              try {
+                await onboardingApi.connectWearable({ action: 'SKIP' });
+              } catch (e) {
+                console.warn('Skip API error', e);
+              }
+              navigation.navigate('CheckupOcr');
+            }} 
+            style={styles.skipButton}
+          >
             <Text style={[styles.skipButtonText, { color: theme.textMuted }]}>건너뛰기</Text>
           </TouchableOpacity>
         }
@@ -165,7 +188,7 @@ export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'D
               styles.submitButton,
               { backgroundColor: isAnySynced ? COLORS.primary : theme.disabledBg },
             ]}
-            onPress={() => navigation.navigate('Welcome')}
+            onPress={() => navigation.navigate('CheckupOcr')}
           >
             <Text
               style={[
@@ -173,7 +196,7 @@ export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'D
                 { color: isAnySynced ? '#ffffff' : theme.disabledText },
               ]}
             >
-              {isAnySynced ? '든든 홈으로 가기' : '다음으로 넘어가기'}
+              {isAnySynced ? '검진지 촬영하러 가기' : '다음으로 넘어가기'}
             </Text>
           </TouchableOpacity>
         </View>

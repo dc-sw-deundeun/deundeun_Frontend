@@ -7,6 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppStore } from '@/store/useAppStore';
 import { Check } from 'lucide-react-native';
 import ScreenHeader from '@/components/ScreenHeader';
+import { authApi } from '@/api';
+import { Alert, ActivityIndicator } from 'react-native';
 
 export default function TermsScreen({ navigation }: RootStackScreenProps<'Terms'>) {
   const { isDarkMode } = useAppStore();
@@ -16,6 +18,7 @@ export default function TermsScreen({ navigation }: RootStackScreenProps<'Terms'
   const [termsAgreed, setTermsAgreed] = useState(false);
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const [locationAgreed, setLocationAgreed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const toggleAll = () => {
     const nextState = !allAgreed;
@@ -46,6 +49,29 @@ export default function TermsScreen({ navigation }: RootStackScreenProps<'Terms'
   };
 
   const isNextEnabled = termsAgreed && privacyAgreed;
+
+  const handleAgree = async () => {
+    if (!isNextEnabled) return;
+    setIsLoading(true);
+    try {
+      await authApi.agreePolicies({
+        consents: [
+          { consent_type: 'TERMS_OF_SERVICE', version: '1.0', agreed: termsAgreed },
+          { consent_type: 'PRIVACY', version: '1.0', agreed: privacyAgreed },
+          { consent_type: 'HEALTH_DATA', version: '1.0', agreed: locationAgreed }, // API assumes HEALTH_DATA for now or we map it
+        ]
+      });
+      setIsLoading(false);
+      // 약관 동의 후 기기 연동 화면으로 이동
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'DeviceSync' }],
+      });
+    } catch (error: any) {
+      setIsLoading(false);
+      Alert.alert('오류', '약관 동의 처리에 실패했습니다. 다시 시도해 주세요.');
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -146,17 +172,21 @@ export default function TermsScreen({ navigation }: RootStackScreenProps<'Terms'
         <TouchableOpacity
           style={[
             styles.submitButton,
-            { backgroundColor: isNextEnabled ? COLORS.primary : theme.disabledBg }
+            { backgroundColor: isNextEnabled && !isLoading ? COLORS.primary : theme.disabledBg }
           ]}
-          disabled={!isNextEnabled}
-          onPress={() => navigation.navigate('Register')}
+          disabled={!isNextEnabled || isLoading}
+          onPress={handleAgree}
         >
-          <Text style={[
-            styles.submitButtonText,
-            { color: isNextEnabled ? '#ffffff' : theme.disabledText }
-          ]}>
-            동의하고 시작하기
-          </Text>
+          {isLoading ? (
+            <ActivityIndicator color="#ffffff" size="small" />
+          ) : (
+            <Text style={[
+              styles.submitButtonText,
+              { color: isNextEnabled ? '#ffffff' : theme.disabledText }
+            ]}>
+              동의하고 시작하기
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>

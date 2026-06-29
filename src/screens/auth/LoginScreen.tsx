@@ -383,7 +383,7 @@ export default function LoginScreen({ navigation }: RootStackScreenProps<'Login'
             {/* Signup Footer */}
             <View style={styles.signupFooter}>
               <Text style={[styles.signupText, { color: theme.textMuted }]}>아직 회원이 아니신가요?</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Terms')}>
+              <TouchableOpacity onPress={() => navigation.navigate('Register')}>
                 <Text style={[styles.signupLink, { color: COLORS.primary }]}> 회원가입</Text>
               </TouchableOpacity>
             </View>

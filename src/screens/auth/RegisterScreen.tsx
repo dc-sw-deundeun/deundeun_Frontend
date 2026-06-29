@@ -164,7 +164,7 @@ export default function RegisterScreen({ navigation }: RootStackScreenProps<'Reg
         nickname,
         verification_token: verificationToken || 'dummy_token',
       });
-      
+
       // 회원가입 완료 후 곧바로 자동 로그인하여 토큰 저장
       try {
         const loginRes = await authApi.login({ email, password });
@@ -177,10 +177,10 @@ export default function RegisterScreen({ navigation }: RootStackScreenProps<'Reg
       }
 
       setIsLoading(false);
-      // 블로킹 팝업 없이 즉시 메인 홈페이지(MainTabs)로 이동
+      // 블로킹 팝업 없이 즉시 약관 동의(Terms) 화면으로 이동
       navigation.reset({
         index: 0,
-        routes: [{ name: 'MainTabs', params: { screen: 'Home' } }],
+        routes: [{ name: 'Terms' }],
       });
     } catch (error: any) {
       setIsLoading(false);
