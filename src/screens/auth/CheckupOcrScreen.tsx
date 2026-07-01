@@ -267,7 +267,7 @@ export default function CheckupOcrScreen({ navigation }: RootStackScreenProps<'C
                   />
 
                   {/* Take Picture Hidden Button (Full screen touch area over camera) */}
-                  <TouchableOpacity style={StyleSheet.absoluteFillObject} onPress={handleTakePicture} />
+                  <TouchableOpacity style={StyleSheet.absoluteFill} onPress={handleTakePicture} />
 
                   {/* Bottom Auto Scan Text */}
                   <View style={styles.autoScanContainer} pointerEvents="none">
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cameraOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0,0,0,0.1)',
   },
   cameraToggleBtn: {

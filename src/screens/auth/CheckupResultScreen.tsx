@@ -50,7 +50,7 @@ export default function CheckupResultScreen({ route, navigation }: RootStackScre
         metrics: apiMetrics,
       });
 
-      const recordId = commitRes?.data?.record_id || commitRes?.record_id;
+      const recordId = commitRes?.data?.record_id || (commitRes as any)?.record_id;
 
       if (recordId) {
         // 3단계: 검진 수치 최종 검수 (Verify)

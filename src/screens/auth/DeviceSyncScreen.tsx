@@ -18,7 +18,7 @@ export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'D
 
   const handleSync = async (appName: string) => {
     if (syncedApps.includes(appName)) return;
-    
+
     setConnectingApp(appName);
 
     let provider: WearableProvider = 'SAMSUNG_HEALTH';
@@ -31,7 +31,7 @@ export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'D
         provider: provider,
       });
       setSyncedApps((prev) => [...prev, appName]);
-      
+
       // 연동 성공 후 사용자에게 체크 표시를 잠깐 보여준 뒤 자동 이동
       setTimeout(() => {
         navigation.navigate('CheckupOcr');
@@ -57,7 +57,7 @@ export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'D
         onBack={() => navigation.goBack()}
         right={
           !isAnySynced ? (
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={async () => {
                 if (syncedApps.length > 0) {
                   // 이미 연동했다면 SKIP API를 부르지 않고(409 방지) 바로 이동
@@ -70,7 +70,7 @@ export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'D
                   console.warn('Skip API error', e);
                 }
                 navigation.navigate('CheckupOcr');
-              }} 
+              }}
               style={styles.skipButton}
             >
               <Text style={[styles.skipButtonText, { color: theme.textMuted }]}>건너뛰기</Text>

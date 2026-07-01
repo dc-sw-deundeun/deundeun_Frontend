@@ -29,10 +29,12 @@ import MyPageScreen from '@/screens/mypage/MyPageScreen';
 import DetailsScreen from '@/screens/DetailsScreen';
 import HealthReportScreen from '@/screens/history/HealthReportScreen';
 import EditResultsScreen from '@/screens/history/EditResultsScreen';
+import EditRecordScreen from '@/screens/history/EditRecordScreen';
 import SearchBrowseScreen from '@/screens/search/SearchBrowseScreen';
 import ChangePasswordScreen from '@/screens/mypage/ChangePasswordScreen';
 import ConnectedAppsScreen from '@/screens/mypage/ConnectedAppsScreen';
 import NotificationsScreen from '@/screens/mypage/NotificationsScreen';
+import MetricDetailScreen from '@/screens/history/MetricDetailScreen';
 
 // Import Lucide Icons
 import { Home, FileText, PawPrint, User, ListTodo } from 'lucide-react-native';
@@ -340,6 +342,8 @@ export const AppNavigator = () => {
         <Stack.Screen name="Details" component={DetailsScreen} />
         <Stack.Screen name="HealthReport" component={HealthReportScreen} />
         <Stack.Screen name="EditResults" component={EditResultsScreen} />
+        <Stack.Screen name="EditRecord" component={EditRecordScreen} />
+        <Stack.Screen name="MetricDetail" component={MetricDetailScreen} />
         <Stack.Screen name="SearchBrowse" component={SearchBrowseScreen} />
         <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
         <Stack.Screen name="ConnectedApps" component={ConnectedAppsScreen} />

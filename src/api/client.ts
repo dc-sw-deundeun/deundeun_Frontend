@@ -1,6 +1,8 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { API_CONFIG } from '@/constants/config';
 
+console.log('[API Client] Initialized with baseURL:', API_CONFIG.BASE_URL);
+
 // Axios 인스턴스 생성
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_CONFIG.BASE_URL,

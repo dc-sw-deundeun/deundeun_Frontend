@@ -26,13 +26,24 @@ export type RootStackParamList = {
     otherParam?: string;
   };
   HealthReport: {
-    date: string;
+    recordId?: number;
+    date?: string;
     bloodSugar?: number;
     bloodPressure?: string;
     cholesterol?: number;
     bmi?: number;
   } | undefined;
   EditResults: undefined;
+  EditRecord: {
+    recordId: number;
+  };
+  MetricDetail: {
+    recordId: number;
+    metricCode: string;
+    metricName: string;
+    value: string;
+    unit: string | null;
+  };
   SearchBrowse: undefined;
   ChangePassword: undefined;
   ConnectedApps: undefined;
@@ -41,4 +52,3 @@ export type RootStackParamList = {
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
   NativeStackScreenProps<RootStackParamList, T>;
-

@@ -155,7 +155,7 @@ export default function MyPageScreen({ navigation }: MyPageScreenProps) {
             onPress={async () => {
               await storage.clearTokens();
               setAccessToken(null);
-              navigation.reset({
+              (navigation as any).reset({
                 index: 0,
                 routes: [{ name: 'Splash' }],
               });
