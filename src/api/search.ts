@@ -15,9 +15,12 @@ export interface DiseaseSearchResponse {
 export const searchApi = {
   // 질환 검색 (의학 지식 그래프 + AI)
   searchDiseases: async (query: string): Promise<ApiResponse<DiseaseSearchResponse>> => {
-    const response = await apiClient.get<ApiResponse<DiseaseSearchResponse>>('/search/diseases', {
+    const response = await apiClient.get<DiseaseSearchResponse>('/search/diseases', {
       params: { q: query },
     });
-    return response.data;
+    return {
+      success: true,
+      data: response.data,
+    };
   },
 };

@@ -41,7 +41,7 @@ export const ProgressCard: React.FC<ProgressCardProps> = ({
 
       {/* Level Bar */}
       <View style={[styles.progressBarContainer, { backgroundColor: theme.background }]}>
-        <View style={[styles.progressBarFill, { backgroundColor: COLORS.primary, width: progressPercent }]} />
+        <View style={[styles.progressBarFill, { backgroundColor: COLORS.primary, width: progressPercent as any }]} />
       </View>
       <Text style={[styles.progressHelpText, { color: theme.textMuted }]}>
         다음 레벨(Lv {currentLevel + 1})까지 {expToNext} XP 남았어요!

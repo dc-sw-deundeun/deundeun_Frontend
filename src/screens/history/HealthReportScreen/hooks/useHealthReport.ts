@@ -9,6 +9,7 @@ export const useHealthReport = (recordId: number | undefined, onDeleted: () => v
   const [dateStr, setDateStr] = useState('');
   const [verificationStatus, setVerificationStatus] = useState('UNVERIFIED');
   const [addedMissions, setAddedMissions] = useState<string[]>([]);
+  const [summaryText, setSummaryText] = useState('');
 
   useEffect(() => {
     if (recordId) {
@@ -26,6 +27,18 @@ export const useHealthReport = (recordId: number | undefined, onDeleted: () => v
         setMetrics(res.data.metrics || []);
         setDateStr(res.data.measured_at || res.data.created_at || '');
         setVerificationStatus(res.data.verification_status || 'UNVERIFIED');
+      }
+
+      // Fetch the analysis summary to display under the comprehensive opinion card
+      try {
+        const analysisRes = await recordsApi.getCheckupAnalysis(recordId!);
+        if (analysisRes.success && analysisRes.data) {
+          const analysisData = analysisRes.data.analysis || analysisRes.data || {};
+          const explSummary = analysisData.explanation?.summary || analysisData.ui?.summary?.overall?.summary || '';
+          setSummaryText(explSummary);
+        }
+      } catch (e) {
+        console.warn('검진 결과 분석 로드 실패:', e);
       }
     } catch (e) {
       console.warn('검진 결과 상세 로드 실패:', e);
@@ -51,30 +64,18 @@ export const useHealthReport = (recordId: number | undefined, onDeleted: () => v
     }
   };
 
-  const handleDelete = async () => {
-    if (!recordId) return;
-    Alert.alert('기록 삭제', '정말 이 검진 기록을 삭제하시겠습니까?', [
-      { text: '취소', style: 'cancel' },
-      {
-        text: '삭제',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            const res = await recordsApi.deleteCheckup(recordId);
-            if (res.success) {
-              Alert.alert('삭제 완료', '검진 기록이 성공적으로 삭제되었습니다.', [
-                {
-                  text: '확인',
-                  onPress: onDeleted,
-                },
-              ]);
-            }
-          } catch {
-            Alert.alert('오류', '기록 삭제 중 오류가 발생했습니다.');
-          }
-        },
-      },
-    ]);
+  const deleteCheckupRecord = async (): Promise<boolean> => {
+    if (!recordId) return false;
+    try {
+      const res = await recordsApi.deleteCheckup(recordId);
+      if (res.success) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('검진 기록 삭제 중 오류:', error);
+      throw error;
+    }
   };
 
   const handleAddMission = (missionName: string) => {
@@ -89,8 +90,9 @@ export const useHealthReport = (recordId: number | undefined, onDeleted: () => v
     dateStr,
     verificationStatus,
     addedMissions,
+    summaryText,
     handleVerify,
-    handleDelete,
+    deleteCheckupRecord,
     handleAddMission,
   };
 };

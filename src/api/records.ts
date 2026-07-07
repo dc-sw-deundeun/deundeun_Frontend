@@ -68,10 +68,12 @@ export const recordsApi = {
     return response.data;
   },
 
-  // 검진 기록 삭제
   deleteCheckup: async (recordId: number): Promise<ApiResponse<any>> => {
-    const response = await apiClient.delete<ApiResponse<any>>(`/records/checkups/${recordId}`);
-    return response.data;
+    const response = await apiClient.delete<any>(`/records/checkups/${recordId}`);
+    return {
+      success: true,
+      data: response.data,
+    };
   },
 
   // 검진 지표 일괄 수정

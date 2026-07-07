@@ -9,26 +9,49 @@ import { formatDate } from '../utils';
 
 interface SummaryCardProps {
   cautionCount: number;
+  normalCount: number;
   dateStr: string;
   theme: { text: string; textMuted: string };
+  summaryText?: string;
 }
 
-export const SummaryCard: React.FC<SummaryCardProps> = ({ cautionCount, dateStr, theme }) => {
+export const SummaryCard: React.FC<SummaryCardProps> = ({
+  cautionCount,
+  normalCount,
+  dateStr,
+  theme,
+  summaryText,
+}) => {
   return (
     <Card style={styles.summaryCard} padding={SPACING.md}>
-      <View style={styles.summaryTopRow}>
-        <View style={[styles.alertIconCircle, { backgroundColor: (cautionCount > 0 ? COLORS.warning : COLORS.success) + '15' }]}>
-          <AlertTriangle color={cautionCount > 0 ? COLORS.warning : COLORS.success} size={26} />
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View style={{ gap: 4 }}>
+          <Text style={{ color: theme.textMuted, fontSize: 12, fontWeight: '600' }}>종합 소견</Text>
+          <Text style={{ color: theme.text, fontSize: 20, fontWeight: '800' }}>
+            {cautionCount > 0 ? '관리가 필요해요' : '아주 건강해요!'}
+          </Text>
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.summaryTitle, { color: theme.text }]}>
-            {cautionCount > 0 ? '종합 소견: 관리가 필요해요' : '종합 소견: 아주 건강해요!'}
-          </Text>
-          <Text style={[styles.summarySubtitle, { color: theme.textMuted }]}>
-            {formatDate(dateStr)} 검진 결과 기준, 주의/경계 지표는 {cautionCount}개입니다.
-          </Text>
+        <View style={{ flexDirection: 'row', gap: 6 }}>
+          {cautionCount > 0 && (
+            <View style={{ backgroundColor: COLORS.warning + '15', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16 }}>
+              <Text style={{ color: COLORS.warning, fontWeight: '800', fontSize: 13 }}>주의 {cautionCount}</Text>
+            </View>
+          )}
+          {normalCount > 0 && (
+            <View style={{ backgroundColor: COLORS.success + '15', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16 }}>
+              <Text style={{ color: COLORS.success, fontWeight: '800', fontSize: 13 }}>정상 {normalCount}</Text>
+            </View>
+          )}
         </View>
       </View>
+
+      {summaryText ? (
+        <View style={{ marginTop: SPACING.md, paddingTop: SPACING.sm, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.05)' }}>
+          <Text style={{ color: theme.text, fontSize: 13, lineHeight: 18, fontWeight: '500' }}>
+            {summaryText}
+          </Text>
+        </View>
+      ) : null}
     </Card>
   );
 };

@@ -9,13 +9,7 @@ export interface HomeUser {
   onboarding_completed: boolean;
 }
 
-// 보유 동물 정보 타입
-export interface OwnedAnimal {
-  animal_code: string;
-  name: string;
-  unlocked_level: number;
-  unlocked_at: string;
-}
+import { OwnedAnimal } from './character';
 
 // Home 캐릭터 정보 타입
 export interface HomeCharacter {
