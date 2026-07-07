@@ -6,6 +6,8 @@ import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Check, Calendar } from 'lucide-react-native';
 import ScreenHeader from '@/components/ScreenHeader';
+import { useFocusEffect } from '@react-navigation/native';
+import { missionApi } from '@/api';
 
 // Enable LayoutAnimation for Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -130,13 +132,10 @@ export default function PracticeScreen() {
   // Selected Month State
   const [selectedMonth, setSelectedMonth] = useState<'2024년 5월' | '2024년 4월'>('2024년 5월');
 
-  // Daily Missions State
-  const [missions, setMissions] = useState<DailyMission[]>([
-    { id: 1, title: '아침 30분 걷기', category: '유산소로 혈당 낮추기', completed: false, xp: 10 },
-    { id: 2, title: '잡곡밥 · 채소 먼저 먹기', category: '식이섬유 챙기기', completed: false, xp: 15 },
-  ]);
-
+  // Daily Missions State (API 연동 데이터)
+  const [missions, setMissions] = useState<DailyMission[]>([]);
   const [streakDays] = useState(27);
+  const [loading, setLoading] = useState(true);
 
   // Verification Modal States
   const [isVerifyModalVisible, setIsVerifyModalVisible] = useState(false);
@@ -145,6 +144,34 @@ export default function PracticeScreen() {
   // Calendar Day Detail Inline Toggle State
   const [selectedDayDetail, setSelectedDayDetail] = useState<{ day: number; month: string } | null>(null);
 
+  const loadTodayMissions = async () => {
+    try {
+      setLoading(true);
+      const res = await missionApi.getTodayMissions();
+      if (res.success && res.data) {
+        const mapped = res.data.items.map((item) => ({
+          id: item.mission_id,
+          title: item.title,
+          category: item.rationale || item.category || '오늘의 건강 실천',
+          completed: item.status === 'COMPLETED',
+          xp: item.xp_reward,
+        }));
+        setMissions(mapped);
+      }
+    } catch (error) {
+      console.error('오늘의 미션 로드 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 포커스 시 실시간 미션 리스트 조회
+  useFocusEffect(
+    React.useCallback(() => {
+      loadTodayMissions();
+    }, [])
+  );
+
   const completedCount = missions.filter((m) => m.completed).length;
 
   const handleVerifyPress = (id: number) => {
@@ -152,18 +179,22 @@ export default function PracticeScreen() {
     setIsVerifyModalVisible(true);
   };
 
-  const handleCompleteVerification = () => {
+  const handleCompleteVerification = async () => {
     if (activeMissionId !== null) {
-      setMissions((prev) =>
-        prev.map((m) => {
-          if (m.id === activeMissionId) {
-            return { ...m, completed: true };
-          }
-          return m;
-        })
-      );
-      setIsVerifyModalVisible(false);
-      Alert.alert('미션 인증 완료', '미션 인증이 완료되어 XP가 지급되었습니다!');
+      try {
+        setLoading(true);
+        await missionApi.completeMission(activeMissionId);
+        setIsVerifyModalVisible(false);
+        Alert.alert('미션 인증 완료', '미션 인증이 완료되어 XP가 지급되었습니다!');
+        
+        // 목록 다시 로드하여 완료 상태 업데이트
+        await loadTodayMissions();
+      } catch (error) {
+        console.error('미션 인증 실패:', error);
+        Alert.alert('오류', '미션 인증 처리 중 오류가 발생했습니다.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 

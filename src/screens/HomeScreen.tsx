@@ -5,9 +5,10 @@ import { COLORS, SPACING, TYPOGRAPHY } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Trophy, Check } from 'lucide-react-native';
+import { homeApi, missionApi } from '@/api';
 
 // Navigation types
-import { CompositeScreenProps } from '@react-navigation/native';
+import { CompositeScreenProps, useFocusEffect } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, MainTabParamList } from '@/types/navigation';
@@ -156,10 +157,21 @@ const CroakingFrog = ({ gardenLayout, initialX, initialY }: CroakingFrogProps) =
   );
 };
 
+// 각 동물의 목장 내 배치 위치 좌표 및 이모지 정의
+const ANIMAL_COORDINATES: Record<string, { posX: number; posY: number; emoji: string }> = {
+  frog: { posX: 50, posY: 110, emoji: '🐸' },
+  cat: { posX: 260, posY: 90, emoji: '🐱' },
+  bear: { posX: 140, posY: 170, emoji: '🐻' },
+  chick: { posX: 60, posY: 220, emoji: '🐥' },
+  dog: { posX: 260, posY: 200, emoji: '🐶' },
+  mon: { posX: 190, posY: 240, emoji: '🐵' },
+  pan: { posX: 120, posY: 80, emoji: '🐼' },
+  tig: { posX: 180, posY: 130, emoji: '🐯' },
+};
+
 export default function HomeScreen({ navigation }: HomeScreenProps) {
   const { isDarkMode } = useAppStore();
 
-  // Custom theme variables for the new design (soft pasture theme)
   const theme = {
     background: '#A6D7A8', // Pastel grass green
     cardBg: '#F5F4EE',    // Cream off-white card background
@@ -170,24 +182,14 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
   // Streak & Points State
   const [streakDays, setStreakDays] = useState(27);
-  const [totalPoints, setTotalPoints] = useState(240);
+  const [totalPoints, setTotalPoints] = useState(0);
+  const [userLevel, setUserLevel] = useState(1);
 
   // Today's Missions
-  const [missions, setMissions] = useState<Mission[]>([
-    { id: 1, title: '아침 30분 걷기', points: 10, completed: false, emoji: 'hi' },
-    { id: 2, title: '잡곡밥 · 채소 먼저', points: 10, completed: false, emoji: 'dh' },
-    { id: 3, title: '물 자주 마시기', points: 5, completed: false, emoji: 'kk' },
-  ]);
+  const [missions, setMissions] = useState<Mission[]>([]);
 
   // Floating animal characters positioning
-  const [characters] = useState<AnimalCharacter[]>([
-    { id: 1, emoji: '🐸', level: null, posX: 50, posY: 110 },
-    { id: 2, emoji: '🐱', level: 40, posX: 260, posY: 90 },
-    { id: 3, emoji: '🐻', level: 33, posX: 140, posY: 170 },
-    { id: 4, emoji: '🐥', level: 35, posX: 60, posY: 220 },
-    { id: 5, emoji: '🐶', level: 18, posX: 260, posY: 200 },
-    { id: 6, emoji: '🐧', level: null, posX: 190, posY: 240 },
-  ]);
+  const [characters, setCharacters] = useState<AnimalCharacter[]>([]);
 
   // Verification Modal states
   const [isVerifyModalVisible, setIsVerifyModalVisible] = useState(false);
@@ -199,6 +201,66 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
   // Garden container layout size to bound the frog drag
   const [gardenLayout, setGardenLayout] = useState({ width: 0, height: 0 });
+  const [loading, setLoading] = useState(true);
+
+  // 홈 화면 데이터 로드
+  const loadHomeData = async () => {
+    try {
+      setLoading(true);
+      const res = await homeApi.getHome();
+      if (res.success && res.data) {
+        const { character, today_missions } = res.data;
+        
+        // 경험치 및 레벨 설정
+        setTotalPoints(character.total_exp);
+        setUserLevel(character.level);
+
+        // 오늘 미션 목록 매핑
+        const mappedMissions = today_missions.items.map((item) => {
+          let emoji = '🌿';
+          if (item.template_code === 'DEFAULT_SELF_CHECK') {
+            emoji = '🩺';
+          } else if (item.category === 'FOOD' || item.category === 'DIET') {
+            emoji = '🥗';
+          } else if (item.category === 'EXERCISE' || item.category === 'ACTIVITY') {
+            emoji = '🏃';
+          }
+          return {
+            id: item.mission_id,
+            title: item.title,
+            points: item.xp_reward,
+            completed: item.status === 'COMPLETED',
+            emoji,
+          };
+        });
+        setMissions(mappedMissions);
+
+        // 보유 중인 캐릭터 동적 좌표 매핑
+        const mappedCharacters = character.owned_animals.map((animal, idx) => {
+          const coord = ANIMAL_COORDINATES[animal.animal_code] || { posX: 50 + (idx * 30), posY: 100 + (idx * 20), emoji: '🐾' };
+          return {
+            id: idx + 1,
+            emoji: coord.emoji,
+            level: idx === 0 ? character.level : null, // 주 캐릭터에만 레벨 노출
+            posX: coord.posX,
+            posY: coord.posY,
+          };
+        });
+        setCharacters(mappedCharacters);
+      }
+    } catch (error) {
+      console.error('홈 화면 데이터 로딩 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 화면 포커스 시 실시간 홈 데이터 갱신
+  useFocusEffect(
+    React.useCallback(() => {
+      loadHomeData();
+    }, [])
+  );
 
   // Glass styles
   const glassSheetStyle = {
@@ -286,43 +348,29 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     if (!mission) return;
 
     if (mission.completed) {
-      const updatedMissions = missions.map((m) => {
-        if (m.id === id) {
-          setTotalPoints((prev) => prev - m.points);
-          return { ...m, completed: false };
-        }
-        return m;
-      });
-      setMissions(updatedMissions);
+      Alert.alert('알림', '이미 완료된 미션입니다.');
     } else {
       setActiveMissionId(id);
       setIsVerifyModalVisible(true);
     }
   };
 
-  const handleCompleteVerification = () => {
+  const handleCompleteVerification = async () => {
     if (activeMissionId !== null) {
-      const updatedMissions = missions.map((m) => {
-        if (m.id === activeMissionId) {
-          const nextState = !m.completed;
-          if (nextState) {
-            setTotalPoints((prev) => prev + m.points);
-          }
-          return { ...m, completed: nextState };
-        }
-        return m;
-      });
-
-      setMissions(updatedMissions);
-      setIsVerifyModalVisible(false);
-      Alert.alert('미션 인증 완료', '미션 인증이 완료되어 포인트가 지급되었습니다!');
-
-      const nextCompletedCount = updatedMissions.filter((m) => m.completed).length;
-      if (nextCompletedCount === missions.length) {
-        setTimeout(() => {
-          setLevelUpAnimal('곰');
-          setIsLevelUpVisible(true);
-        }, 600);
+      try {
+        setLoading(true);
+        // 서버에 미션 완료 요청 전송
+        await missionApi.completeMission(activeMissionId);
+        setIsVerifyModalVisible(false);
+        Alert.alert('미션 인증 완료', '미션 인증이 완료되어 포인트(XP)가 지급되었습니다!');
+        
+        // 홈 데이터 리로드하여 실시간으로 포인트 및 동물 성장 상태 반영
+        await loadHomeData();
+      } catch (error) {
+        console.error('미션 완료 처리 실패:', error);
+        Alert.alert('오류', '미션 완료 처리 중 오류가 발생했습니다.');
+      } finally {
+        setLoading(false);
       }
     }
   };

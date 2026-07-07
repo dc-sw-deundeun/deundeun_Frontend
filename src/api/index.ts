@@ -6,3 +6,5 @@ export * from './records';
 export * from './my';
 export * from './notification';
 export * from './search';
+export * from './home';
+export * from './mission';
