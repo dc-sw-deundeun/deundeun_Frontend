@@ -51,12 +51,12 @@ export const useHealthReport = (recordId: number | undefined, onDeleted: () => v
   const handleVerify = async () => {
     if (!recordId) return;
     try {
-      const res = await recordsApi.verifyCheckup(recordId);
+      const res = await recordsApi.analyzeCheckup(recordId);
       if (res.success) {
         setVerificationStatus('VERIFIED');
-        Alert.alert('검수 완료', '사용자 확인이 완료되어 검진 기록이 VERIFIED 상태로 전환되었습니다.');
+        Alert.alert('저장 완료', '사용자 확인이 완료되어 검진 기록이 저장되었습니다.');
       } else {
-        Alert.alert('오류', res.message || '검수 전환에 실패했습니다.');
+        Alert.alert('오류', res.message || '저장에 실패했습니다.');
       }
     } catch (e) {
       console.error(e);

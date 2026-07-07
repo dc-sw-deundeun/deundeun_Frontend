@@ -54,10 +54,10 @@ export default function CheckupResultScreen({ route, navigation }: RootStackScre
       const recordId = commitRes?.data?.record_id || (commitRes as any)?.record_id;
 
       if (recordId) {
-        // 3단계: 검진 수치 최종 검수 (Verify)
-        await recordsApi.verifyCheckup(recordId, { metrics: [] });
+        // 3단계: 검진 결과 분석 및 기록 최종 저장 (Analyses)
+        await recordsApi.analyzeCheckup(recordId);
       } else {
-        console.warn('record_id가 없습니다. Verify 단계를 건너뜁니다.');
+        console.warn('record_id가 없습니다. 분석 단계를 건너뜁니다.');
       }
 
       // 4단계: 온보딩 최종 완료 처리
@@ -66,7 +66,12 @@ export default function CheckupResultScreen({ route, navigation }: RootStackScre
       setIsLoading(false);
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Welcome' }],
+        routes: [
+          {
+            name: 'MainTabs',
+            params: { screen: 'History' },
+          },
+        ],
       });
     } catch (error) {
       setIsLoading(false);

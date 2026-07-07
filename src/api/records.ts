@@ -48,9 +48,11 @@ export const recordsApi = {
     return response.data;
   },
 
-  // 검진 결과 최종 검수 (Verify)
-  verifyCheckup: async (recordId: number, data?: { metrics: any[] }): Promise<ApiResponse<any>> => {
-    const response = await apiClient.post<ApiResponse<any>>(`/records/checkups/${recordId}/verify`, data || { metrics: [] });
+  // 검진 결과 분석 및 기록 최종 저장 (Analyses)
+  analyzeCheckup: async (recordId: number): Promise<ApiResponse<any>> => {
+    const response = await apiClient.post<ApiResponse<any>>(`/health-metrics/analyses`, {
+      record_id: recordId
+    });
     return response.data;
   },
 
@@ -69,11 +71,8 @@ export const recordsApi = {
   },
 
   deleteCheckup: async (recordId: number): Promise<ApiResponse<any>> => {
-    const response = await apiClient.delete<any>(`/records/checkups/${recordId}`);
-    return {
-      success: true,
-      data: response.data,
-    };
+    const response = await apiClient.delete<ApiResponse<any>>(`/records/checkups/${recordId}`);
+    return response.data;
   },
 
   // 검진 지표 일괄 수정

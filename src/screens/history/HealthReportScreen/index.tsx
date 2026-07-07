@@ -3,7 +3,7 @@ import { View, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal } f
 import { COLORS } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CheckCircle, Trash2 } from 'lucide-react-native';
+import { CheckCircle, Trash2, X } from 'lucide-react-native';
 import ScreenHeader from '@/components/ScreenHeader';
 import Text from '@/components/Text';
 import { RootStackScreenProps } from '@/types/navigation';
@@ -19,6 +19,7 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
 
   const recordId = route.params?.recordId;
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
 
   const {
     isLoading,
@@ -29,6 +30,21 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
     handleVerify,
     deleteCheckupRecord,
   } = useHealthReport(recordId, () => navigation.goBack());
+
+  const handleDeleteConfirm = async () => {
+    setIsDeleteModalVisible(false);
+    try {
+      const success = await deleteCheckupRecord();
+      if (success) {
+        navigation.navigate('MainTabs', { screen: 'History' });
+      } else {
+        setIsErrorModalVisible(true);
+      }
+    } catch (e) {
+      console.error('검진 기록 삭제 에러:', e);
+      setIsErrorModalVisible(true);
+    }
+  };
 
   const cautionCount = metrics.filter(m => {
     const ko = mapStatusToKorean(m.status);
@@ -45,7 +61,7 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
     const list: any[] = [];
     const systolic = metrics.find(m => m.metric_code === 'SystolicBP');
     const diastolic = metrics.find(m => m.metric_code === 'DiastolicBP');
-    
+
     // Process combined Blood Pressure
     if (systolic || diastolic) {
       const bpVal = `${systolic?.value ?? '-'}/${diastolic?.value ?? '-'}`;
@@ -189,22 +205,51 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
               </TouchableOpacity>
               <TouchableOpacity
                 style={{ flex: 1, height: 48, borderRadius: 14, backgroundColor: COLORS.error, justifyContent: 'center', alignItems: 'center' }}
-                onPress={async () => {
-                  try {
-                    const success = await deleteCheckupRecord();
-                    if (success) {
-                      setIsDeleteModalVisible(false);
-                      Alert.alert('삭제 완료', '검진 기록이 성공적으로 삭제되었습니다.', [
-                        { text: '확인', onPress: () => navigation.navigate('MainTabs', { screen: 'History' }) }
-                      ]);
-                    }
-                  } catch {
-                    setIsDeleteModalVisible(false);
-                    Alert.alert('오류', '기록 삭제 중 오류가 발생했습니다.');
-                  }
-                }}
+                onPress={handleDeleteConfirm}
               >
                 <Text style={{ fontSize: 14, fontWeight: '700', color: '#ffffff' }}>삭제하기</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Deletion Error/Retry Modal */}
+      <Modal
+        visible={isErrorModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsErrorModalVisible(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+          <View style={{ width: '100%', maxWidth: 320, backgroundColor: theme.card || '#ffffff', borderRadius: 24, padding: 24, gap: 16, position: 'relative' }}>
+            {/* Close Button X */}
+            <TouchableOpacity
+              style={{ position: 'absolute', right: 16, top: 16, zIndex: 10, padding: 4 }}
+              onPress={() => setIsErrorModalVisible(false)}
+            >
+              <X color={theme.text} size={20} />
+            </TouchableOpacity>
+
+            <View style={{ alignItems: 'center', gap: 8, marginTop: 12 }}>
+              <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: COLORS.error + '15', justifyContent: 'center', alignItems: 'center' }}>
+                <X color={COLORS.error} size={28} />
+              </View>
+              <Text style={{ fontSize: 18, fontWeight: '800', color: theme.text, marginTop: 8 }}>삭제 실패</Text>
+              <Text style={{ fontSize: 13, lineHeight: 18, color: theme.textMuted, textAlign: 'center', marginTop: 4 }}>
+                검진 기록을 삭제하지 못했습니다.{"\n"}다시 시도해 주세요.
+              </Text>
+            </View>
+
+            <View style={{ gap: 12, marginTop: 8 }}>
+              <TouchableOpacity
+                style={{ height: 48, borderRadius: 14, backgroundColor: COLORS.primary, justifyContent: 'center', alignItems: 'center' }}
+                onPress={async () => {
+                  setIsErrorModalVisible(false);
+                  await handleDeleteConfirm();
+                }}
+              >
+                <Text style={{ fontSize: 14, fontWeight: '700', color: '#ffffff' }}>재시도</Text>
               </TouchableOpacity>
             </View>
           </View>
