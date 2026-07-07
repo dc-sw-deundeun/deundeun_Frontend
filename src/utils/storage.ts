@@ -32,6 +32,16 @@ export const storage = {
     }
   },
 
+  // 저장된 리프레시 토큰 조회
+  getRefreshToken: async (): Promise<string | null> => {
+    try {
+      return await AsyncStorage.getItem(REFRESH_TOKEN_KEY);
+    } catch (e) {
+      console.error('리프레시 토큰 조회 실패:', e);
+      return null;
+    }
+  },
+
   // 토큰 및 자동 로그인 정보 삭제 (로그아웃 시)
   clearTokens: async () => {
     try {
