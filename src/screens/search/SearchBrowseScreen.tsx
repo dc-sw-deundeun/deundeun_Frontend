@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, ScrollView, Modal, Alert } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, ScrollView, Modal, Alert, ActivityIndicator } from 'react-native';
 import Text from '@/components/Text';
 import Card from '@/components/Card';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/constants/theme';
@@ -7,6 +7,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Search, HelpCircle, ShieldAlert, Heart, RefreshCw } from 'lucide-react-native';
 import { RootStackScreenProps } from '@/types/navigation';
+import { searchApi, DiseaseResult } from '@/api';
 
 export default function SearchBrowseScreen({ navigation }: RootStackScreenProps<'SearchBrowse'>) {
   const { isDarkMode } = useAppStore();
@@ -15,18 +16,47 @@ export default function SearchBrowseScreen({ navigation }: RootStackScreenProps<
   const [query, setQuery] = useState('');
   const [showResult, setShowResult] = useState(false);
   const [showExplanationSheet, setShowExplanationSheet] = useState(false);
+  
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<DiseaseResult[]>([]);
+  const [selectedDisease, setSelectedDisease] = useState<DiseaseResult | null>(null);
 
   const popularSearches = ['공복 혈당', '총콜레스테롤', '혈압', 'BMI', '간 수치'];
 
-  const handleSearchSubmit = () => {
-    if (query.trim()) {
+  const performSearch = async (searchTerm: string) => {
+    if (!searchTerm.trim()) return;
+    try {
+      setLoading(true);
       setShowResult(true);
+      const res = await searchApi.searchDiseases(searchTerm);
+      if (res.success && res.data && res.data.results) {
+        setResults(res.data.results);
+        if (res.data.results.length > 0) {
+          setSelectedDisease(res.data.results[0]);
+        } else {
+          setSelectedDisease(null);
+        }
+      } else {
+        setResults([]);
+        setSelectedDisease(null);
+      }
+    } catch (error) {
+      console.error('질환 검색 중 오류 발생:', error);
+      Alert.alert('검색 실패', '검색 과정에서 문제가 발생했습니다.');
+      setResults([]);
+      setSelectedDisease(null);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleSearchSubmit = () => {
+    performSearch(query);
   };
 
   const handlePopularSearch = (term: string) => {
     setQuery(term);
-    setShowResult(true);
+    performSearch(term);
   };
 
   return (
@@ -74,54 +104,77 @@ export default function SearchBrowseScreen({ navigation }: RootStackScreenProps<
         ) : (
           /* Search Results Screen State */
           <View style={styles.resultsState}>
-            {/* Main Result Card */}
-            <Card style={styles.resultCard}>
-              <Text style={[styles.resultCategory, { color: COLORS.primary }]}>건강 사전</Text>
-              <Text style={[styles.resultTitle, { color: theme.text }]}>{query}이란?</Text>
-              <Text style={[styles.resultBody, { color: theme.textMuted }]}>
-                {query === '총콜레스테롤'
-                  ? '혈관 건강을 측정하는 가장 대표적인 지방 성분 수치입니다. 세포막을 구성하고 호르몬을 생성하는 데 중요하지만, 수치가 너무 높으면 동맥경화 등의 원인이 될 수 있습니다.'
-                  : `몸에서 일어나는 신진대사 및 혈관/내분비계 장기 수치입니다. 관리 실천(식이섬유 섭취, 운동)을 통해 수치를 안전하게 조절할 수 있습니다.`}
-              </Text>
-            </Card>
-
-            {/* My Stats Card */}
-            <Card style={styles.myStatsCard} padding={SPACING.md} radius={20}>
-              <View style={styles.statsLeft}>
-                <Text style={[styles.statsLabel, { color: theme.textMuted }]}>내 {query} 최근 기록</Text>
-                <Text style={[styles.statsValue, { color: theme.text }]}>
-                  {query === '총콜레스테롤' ? '232 mg/dL (주의)' : '126 mg/dL (주의)'}
+            {loading ? (
+              <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
+            ) : results.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Text style={[styles.emptyText, { color: theme.textMuted }]}>
+                  검색 결과가 없습니다.
                 </Text>
               </View>
-              <TouchableOpacity
-                style={[styles.statsLinkBtn, { backgroundColor: COLORS.primaryLight }]}
-                onPress={() => navigation.navigate('HealthReport')}
-              >
-                <Text style={[styles.statsLinkText, { color: COLORS.primaryDark }]}>최근 분석 보기</Text>
-              </TouchableOpacity>
-            </Card>
+            ) : (
+              results.map((disease, idx) => (
+                <View key={idx} style={{ gap: SPACING.md, marginBottom: SPACING.md }}>
+                  {/* Main Result Card */}
+                  <Card style={styles.resultCard}>
+                    <Text style={[styles.resultCategory, { color: COLORS.primary }]}>건강 사전</Text>
+                    <Text style={[styles.resultTitle, { color: theme.text }]}>{disease.name}이란?</Text>
+                    <Text style={[styles.resultBody, { color: theme.textMuted }]}>
+                      {disease.description}
+                    </Text>
+                    {disease.symptoms && disease.symptoms.length > 0 && (
+                      <View style={{ marginTop: 8 }}>
+                        <Text style={{ fontSize: 13, fontWeight: '700', color: theme.text, marginBottom: 4 }}>주요 증상:</Text>
+                        <Text style={{ fontSize: 13, color: theme.textMuted }}>
+                          {disease.symptoms.join(', ')}
+                        </Text>
+                      </View>
+                    )}
+                  </Card>
 
-            {/* Explanation Sheet Trigger Card */}
-            <TouchableOpacity
-              style={[styles.explanCard, { backgroundColor: COLORS.primaryDark }]}
-              onPress={() => setShowExplanationSheet(true)}
-            >
-              <View style={styles.explanLeft}>
-                <HelpCircle color="#ffffff" size={24} />
-                <View>
-                  <Text style={styles.explanTitle}>수치 쉽게 풀어주기</Text>
-                  <Text style={styles.explanDesc}>어려운 의학 용어와 검사 결과를 쉽게 이해해 보아요.</Text>
+                  {/* My Stats Card */}
+                  <Card style={styles.myStatsCard} padding={SPACING.md} radius={20}>
+                    <View style={styles.statsLeft}>
+                      <Text style={[styles.statsLabel, { color: theme.textMuted }]}>내 {disease.name} 최근 기록</Text>
+                      <Text style={[styles.statsValue, { color: theme.text }]}>
+                        {disease.name.includes('콜레스테롤') ? '232 mg/dL (주의)' : '126 mg/dL (주의)'}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[styles.statsLinkBtn, { backgroundColor: COLORS.primaryLight }]}
+                      onPress={() => navigation.navigate('HealthReport')}
+                    >
+                      <Text style={[styles.statsLinkText, { color: COLORS.primaryDark }]}>최근 분석 보기</Text>
+                    </TouchableOpacity>
+                  </Card>
+
+                  {/* Explanation Sheet Trigger Card */}
+                  <TouchableOpacity
+                    style={[styles.explanCard, { backgroundColor: COLORS.primaryDark }]}
+                    onPress={() => {
+                      setSelectedDisease(disease);
+                      setShowExplanationSheet(true);
+                    }}
+                  >
+                    <View style={styles.explanLeft}>
+                      <HelpCircle color="#ffffff" size={24} />
+                      <View>
+                        <Text style={styles.explanTitle}>수치 쉽게 풀어주기</Text>
+                        <Text style={styles.explanDesc}>어려운 의학 용어와 검사 결과를 쉽게 이해해 보아요.</Text>
+                      </View>
+                    </View>
+                    <Text style={{ color: '#ffffff', fontSize: 18 }}>➔</Text>
+                  </TouchableOpacity>
                 </View>
-              </View>
-              <Text style={{ color: '#ffffff', fontSize: 18 }}>➔</Text>
-            </TouchableOpacity>
+              ))
+            )}
           </View>
         )}
       </ScrollView>
 
       {/* Explanation Sheet (Interpretation Bottom Sheet Modal) */}
       <Modal
-        visible={showExplanationSheet}
+        visible={showExplanationSheet && selectedDisease !== null}
         transparent
         animationType="slide"
         onRequestClose={() => setShowExplanationSheet(false)}
@@ -131,7 +184,7 @@ export default function SearchBrowseScreen({ navigation }: RootStackScreenProps<
             <View style={styles.modalHeader}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <Heart color={COLORS.error} size={20} fill={COLORS.error + '30'} />
-                <Text style={[styles.modalTitle, { color: theme.text }]}>{query || '공복 혈당'} 쉽게 이해하기</Text>
+                <Text style={[styles.modalTitle, { color: theme.text }]}>{selectedDisease?.name} 쉽게 이해하기</Text>
               </View>
               <TouchableOpacity onPress={() => setShowExplanationSheet(false)}>
                 <Text style={{ color: theme.textMuted, fontSize: 16 }}>닫기</Text>
@@ -140,30 +193,32 @@ export default function SearchBrowseScreen({ navigation }: RootStackScreenProps<
 
             <View style={[styles.explanBody, { backgroundColor: theme.background }]}>
               <Text style={[styles.explanValueTitle, { color: theme.text }]}>
-                {query === '총콜레스테롤' ? '232 mg/dL' : '126 mg/dL'}
+                {selectedDisease?.name.includes('콜레스테롤') ? '232 mg/dL' : '126 mg/dL'}
               </Text>
               <View style={[styles.explanStatusBadge, { backgroundColor: COLORS.warning + '15' }]}>
                 <Text style={[styles.explanStatusText, { color: COLORS.warning }]}>주의 단계</Text>
               </View>
 
               <Text style={[styles.explanParagraph, { color: theme.text }]}>
-                {query === '총콜레스테롤'
-                  ? '혈액 내 콜레스테롤 성분이 다소 높은 상태입니다. 지금 당장 심각한 질병이 있는 것은 아니지만, 기름진 식단을 줄이고 하루 30분 유산소 운동을 지속하면 혈액이 깨끗해질 수 있습니다.'
-                  : '밥을 먹기 전 혈류 안의 당분 농도가 정상보다 높은 전단계 구간입니다. 지금부터 걷기와 식단을 통해 인슐린 감수성을 개선하면 약을 먹지 않고도 완전히 정상 회복이 가능한 소중한 골든타임입니다.'}
+                {selectedDisease?.description}
               </Text>
 
               <View style={styles.dosDontsRow}>
                 <View style={[styles.boxCard, { backgroundColor: COLORS.primaryLight + '40', borderColor: COLORS.primary }]}>
                   <Text style={[styles.boxHeader, { color: COLORS.primaryDark }]}>👍 이렇게 해요</Text>
                   <Text style={[styles.boxText, { color: theme.text }]}>
-                    - 식후 가벼운 산책{"\n"}- 풍부한 식이섬유 섭취
+                    {selectedDisease?.name.includes('콜레스테롤')
+                      ? `- 식이섬유 풍부한 채소 섭취\n- 하루 30분 유산소 운동`
+                      : `- 식후 가벼운 산책\n- 설탕/단 음료 줄이기`}
                   </Text>
                 </View>
 
                 <View style={[styles.boxCard, { backgroundColor: COLORS.error + '05', borderColor: COLORS.error }]}>
                   <Text style={[styles.boxHeader, { color: COLORS.error }]}>👎 이건 피해요</Text>
                   <Text style={[styles.boxText, { color: theme.text }]}>
-                    - 단 액상과당 음료{"\n"}- 늦은 밤 야식
+                    {selectedDisease?.name.includes('콜레스테롤')
+                      ? `- 튀김류 등 고포화지방 식단\n- 늦은 시간 야식`
+                      : `- 단 액상과당 음료\n- 기름진 인스턴트 식품`}
                   </Text>
                 </View>
               </View>
@@ -393,5 +448,14 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 15,
     fontWeight: '700',
+  },
+  emptyContainer: {
+    paddingVertical: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
