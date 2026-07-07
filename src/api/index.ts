@@ -8,3 +8,5 @@ export * from './notification';
 export * from './search';
 export * from './home';
 export * from './mission';
+export * from './character';
+

@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, View, ScrollView, Image } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { StyleSheet, View, ScrollView, Image, ActivityIndicator, Platform } from 'react-native';
 import Text from '@/components/Text';
 import { COLORS, SPACING } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
@@ -7,30 +7,88 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Flame, Star, Award } from 'lucide-react-native';
 import ScreenHeader from '@/components/ScreenHeader';
 import Card from '@/components/Card';
+import { useFocusEffect } from '@react-navigation/native';
+import { characterApi, CharacterMeResponse, AnimalCatalogItem } from '@/api';
 
-interface CompanionCharacter {
-  id: number;
-  emoji: string;
-  name: string;
-  level: number;
-  unlocked: boolean;
-}
+// 동물 코드와 로컬 이미지 매핑 정의 (사용자 가이드 반영)
+const ANIMAL_IMAGES: Record<string, any> = {
+  frog: require('../../assets/animal/frog1.png'),
+  chick: require('../../assets/animal/chick1.png'),
+  pan: require('../../assets/animal/pan1.png'), // 펭귄
+  dog: require('../../assets/animal/dog1.png'),
+  cat: require('../../assets/animal/cat1.png'),
+  tig: require('../../assets/animal/tig1.png'), // 호랑이
+  bear: require('../../assets/animal/bear1.png'), // 판다
+  mon: require('../../assets/animal/mon1.png'), // 원숭이
+};
+
+// 백엔드 동물 코드를 로컬 이미지 매핑 키로 변환
+const mapAnimalCodeToAssetKey = (code: string): string => {
+  switch (code) {
+    case 'penguin':
+      return 'pan';
+    case 'tiger':
+      return 'tig';
+    case 'panda':
+      return 'bear';
+    case 'monkey':
+      return 'mon';
+    default:
+      return code; // 'frog', 'chick', 'dog', 'cat'
+  }
+};
 
 export default function GrowthScreen() {
   const { isDarkMode } = useAppStore();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
 
-  const characters: CompanionCharacter[] = [
-    { id: 1, emoji: '🐯', name: '호랑이', level: 40, unlocked: true },
-    { id: 2, emoji: '🐼', name: '판다', level: 35, unlocked: true },
-    { id: 3, emoji: '🐰', name: '토끼', level: 33, unlocked: true },
-    { id: 4, emoji: '🐹', name: '햄스터', level: 18, unlocked: true },
-    { id: 5, emoji: '🐱', name: '고양이', level: 17, unlocked: true },
-    { id: 6, emoji: '🦊', name: '여우', level: 14, unlocked: true },
-    { id: 7, emoji: '🐻', name: '곰', level: 13, unlocked: true },
-    { id: 8, emoji: '🐔', name: '닭', level: 0, unlocked: false },
-    { id: 9, emoji: '🐷', name: '돼지', level: 0, unlocked: false },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [characterInfo, setCharacterInfo] = useState<CharacterMeResponse | null>(null);
+  const [animalsCatalog, setAnimalsCatalog] = useState<AnimalCatalogItem[]>([]);
+
+  // API 데이터 로드
+  const loadGrowthData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [charRes, catalogRes] = await Promise.all([
+        characterApi.getMyCharacter(),
+        characterApi.getAnimalsCatalog(),
+      ]);
+
+      if (charRes.success && charRes.data) {
+        setCharacterInfo(charRes.data);
+      }
+      if (catalogRes.success && catalogRes.data) {
+        setAnimalsCatalog(catalogRes.data.animals);
+      }
+    } catch (error) {
+      console.error('성장 기록 데이터 로딩 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // 화면 포커스 시 실시간 성장 기록 갱신
+  useFocusEffect(
+    useCallback(() => {
+      loadGrowthData();
+    }, [loadGrowthData])
+  );
+
+  if (loading && !characterInfo) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background, justifyContent: 'center', alignItems: 'center' }]} edges={['top', 'left', 'right']}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  const currentLevel = characterInfo?.level ?? 1;
+  const currentExp = characterInfo?.current_level_exp ?? 0;
+  const expToNext = characterInfo?.exp_to_next_level ?? 100;
+  const totalRequiredExp = currentExp + expToNext;
+  const progressPercent = `${((characterInfo?.progress_ratio ?? 0) * 100).toFixed(0)}%`;
+  const totalExp = characterInfo?.total_exp ?? 0;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top', 'left', 'right']}>
@@ -43,20 +101,18 @@ export default function GrowthScreen() {
             <View style={styles.progressHeader}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <Star color={COLORS.primary} size={18} fill={COLORS.primaryLight} />
-                <Text style={[styles.progressTitle, { color: theme.text }]}>성장 포인트</Text>
+                <Text style={[styles.progressTitle, { color: theme.text }]}>성장 포인트 (Lv {currentLevel})</Text>
               </View>
-              <Text style={[styles.progressRatio, { color: COLORS.primary }]}>35 / 50 XP</Text>
+              <Text style={[styles.progressRatio, { color: COLORS.primary }]}>{currentExp} / {totalRequiredExp} XP</Text>
             </View>
 
             {/* Level Bar */}
             <View style={[styles.progressBarContainer, { backgroundColor: theme.background }]}>
-              <View style={[styles.progressBarFill, { backgroundColor: COLORS.primary }]} />
+              <View style={[styles.progressBarFill, { backgroundColor: COLORS.primary, width: progressPercent }]} />
             </View>
             <Text style={[styles.progressHelpText, { color: theme.textMuted }]}>
               12일 연속 건강 기록 달성 중! (+15 XP 추가 획득 가능)
             </Text>
-
-
 
             <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
@@ -73,7 +129,7 @@ export default function GrowthScreen() {
               <View style={styles.statBox}>
                 <Award color={COLORS.primary} size={22} fill={COLORS.primaryLight} />
                 <View style={styles.statInfo}>
-                  <Text style={[styles.statValue, { color: theme.text }]}>4,856</Text>
+                  <Text style={[styles.statValue, { color: theme.text }]}>{totalExp.toLocaleString()}</Text>
                   <Text style={[styles.statLabel, { color: theme.textMuted }]}>든든 포인트</Text>
                 </View>
               </View>
@@ -85,45 +141,64 @@ export default function GrowthScreen() {
             <Text style={[styles.companionsTitle, { color: theme.text }]}>함께 자란 친구들</Text>
 
             <View style={styles.companionsGrid}>
-              {characters.map((char) => (
-                <View
-                  key={char.id}
-                  style={[
-                    styles.companionCard,
-                    {
-                      backgroundColor: isDarkMode ? 'rgba(46, 48, 35, 0.65)' : 'rgba(255, 255, 255, 0.55)',
-                      borderColor: char.unlocked
-                        ? (isDarkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.6)')
-                        : 'rgba(0, 0, 0, 0.02)',
-                      opacity: char.unlocked ? 1 : 0.5,
-                    },
-                  ]}
-                >
-                  {char.unlocked ? (
-                    <>
-                      <View style={[styles.emojiCircle, { backgroundColor: theme.background }]}>
-                        <Text style={styles.companionEmoji}>{char.emoji}</Text>
-                      </View>
-                      <Text style={[styles.companionName, { color: theme.text }]}>{char.name}</Text>
-                      <View style={[styles.levelBadge, { backgroundColor: COLORS.primaryLight }]}>
-                        <Text style={[styles.levelText, { color: COLORS.primaryDark }]}>
-                          Lv {char.level}
-                        </Text>
-                      </View>
-                    </>
-                  ) : (
-                    <>
-                      <View style={[styles.emojiCircle, { backgroundColor: theme.background, opacity: 0.5 }]}>
-                        <Text style={[styles.companionEmoji, { fontSize: 24 }]}>🔒</Text>
-                      </View>
-                      <Text style={[styles.companionName, { color: theme.textMuted }]}>잠김</Text>
-                      <View style={[styles.levelBadge, { backgroundColor: theme.border }]}>
-                        <Text style={[styles.levelText, { color: theme.textMuted }]}>Lv --</Text>
-                      </View>
-                    </>
-                  )}
-                </View>
-              ))}
+              {animalsCatalog.map((animal) => {
+                const assetKey = mapAnimalCodeToAssetKey(animal.animal_code);
+                const imageSource = ANIMAL_IMAGES[assetKey];
+                const isUnlocked = animal.is_unlocked;
+
+                return (
+                  <View
+                    key={animal.animal_code}
+                    style={[
+                      styles.companionCard,
+                      {
+                        backgroundColor: isDarkMode ? 'rgba(46, 48, 35, 0.65)' : 'rgba(255, 255, 255, 0.55)',
+                        borderColor: isUnlocked
+                          ? (isDarkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.6)')
+                          : 'rgba(0, 0, 0, 0.02)',
+                        opacity: isUnlocked ? 1 : 0.55,
+                      },
+                    ]}
+                  >
+                    {isUnlocked ? (
+                      <>
+                        <View style={[styles.emojiCircle, { backgroundColor: theme.background }]}>
+                          {imageSource ? (
+                            <Image source={imageSource} style={styles.companionImage} />
+                          ) : (
+                            <Text style={styles.companionEmoji}>🐾</Text>
+                          )}
+                        </View>
+                        <Text style={[styles.companionName, { color: theme.text }]} numberOfLines={1}>{animal.name}</Text>
+                        <View style={[styles.levelBadge, { backgroundColor: COLORS.primaryLight }]}>
+                          <Text style={[styles.levelText, { color: COLORS.primaryDark }]}>
+                            Lv {animal.unlock_level}
+                          </Text>
+                        </View>
+                      </>
+                    ) : (
+                      <>
+                        <View style={[styles.emojiCircle, { backgroundColor: theme.background, opacity: 0.7 }]}>
+                          {imageSource ? (
+                            <View style={styles.imageOverlayContainer}>
+                              <Image source={imageSource} style={[styles.companionImage, { opacity: 0.15 }]} />
+                              <View style={[StyleSheet.absoluteFill, styles.lockOverlay]}>
+                                <Text style={styles.lockText}>🔒</Text>
+                              </View>
+                            </View>
+                          ) : (
+                            <Text style={[styles.companionEmoji, { fontSize: 24 }]}>🔒</Text>
+                          )}
+                        </View>
+                        <Text style={[styles.companionName, { color: theme.textMuted }]} numberOfLines={1}>잠김</Text>
+                        <View style={[styles.levelBadge, { backgroundColor: theme.border }]}>
+                          <Text style={[styles.levelText, { color: theme.textMuted }]}>Lv {animal.unlock_level}</Text>
+                        </View>
+                      </>
+                    )}
+                  </View>
+                );
+              })}
             </View>
           </View>
         </View>
@@ -142,16 +217,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: SPACING.lg,
     gap: SPACING.lg,
-  },
-  welcomeSection: {
-    gap: 4,
-  },
-  welcomeText: {
-    fontSize: 22,
-    fontWeight: '800',
-  },
-  welcomeSub: {
-    fontSize: 13,
   },
   card: {
     padding: SPACING.lg,
@@ -177,7 +242,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   progressBarFill: {
-    width: '70%', // 35 / 50
     height: '100%',
     borderRadius: 6,
   },
@@ -246,6 +310,11 @@ const styles = StyleSheet.create({
   companionEmoji: {
     fontSize: 28,
   },
+  companionImage: {
+    width: 34,
+    height: 34,
+    resizeMode: 'contain',
+  },
   companionName: {
     fontSize: 12,
     fontWeight: '700',
@@ -259,14 +328,18 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '800',
   },
-  frogContainer: {
+  imageOverlayContainer: {
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: SPACING.md,
+    position: 'relative',
   },
-  frog: {
-    width: 150,
-    height: 150,
-    resizeMode: 'contain',
+  lockOverlay: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lockText: {
+    fontSize: 16,
   },
 });
