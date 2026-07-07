@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, ScrollView, TextInput, TouchableOpacity, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, ScrollView, TextInput, TouchableOpacity, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import Text from '@/components/Text';
 import { RootStackScreenProps } from '@/types/navigation';
-import { COLORS, SPACING } from '@/constants/theme';
+import { COLORS } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppStore } from '@/store/useAppStore';
 import ScreenHeader from '@/components/ScreenHeader';
 import { recordsApi, MetricItem, onboardingApi } from '@/api';
+import { styles } from './CheckupResultScreen.styles';
 
 export default function CheckupResultScreen({ route, navigation }: RootStackScreenProps<'CheckupResult'>) {
   const { isDarkMode } = useAppStore();
@@ -131,72 +132,3 @@ export default function CheckupResultScreen({ route, navigation }: RootStackScre
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.xl,
-    flexGrow: 1,
-  },
-  header: {
-    marginTop: SPACING.md,
-    marginBottom: SPACING.lg,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '800',
-    marginBottom: SPACING.xs,
-  },
-  subtitle: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  metricsContainer: {
-    flex: 1,
-    gap: SPACING.md,
-    marginBottom: SPACING.xl,
-  },
-  metricRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: SPACING.md,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  metricName: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-  },
-  input: {
-    width: 80,
-    height: 44,
-    borderRadius: 8,
-    borderWidth: 1,
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  metricUnit: {
-    fontSize: 14,
-    width: 50,
-  },
-  submitButton: {
-    height: 56,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  submitButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-});
