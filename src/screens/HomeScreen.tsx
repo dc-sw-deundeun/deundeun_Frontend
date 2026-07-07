@@ -4,7 +4,7 @@ import Text from '@/components/Text';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Trophy, Check } from 'lucide-react-native';
+import { Trophy, Check, Leaf } from 'lucide-react-native';
 import { homeApi, missionApi } from '@/api';
 
 // Navigation types
@@ -27,20 +27,23 @@ interface Mission {
 }
 
 interface AnimalCharacter {
-  id: number;
+  id: string;
+  animalCode: string;
   emoji: string;
   level: number | null; // null means no level tag displayed
   posX: number;
   posY: number;
 }
 
-interface CroakingFrogProps {
+interface GardenAnimalProps {
   gardenLayout: { width: number; height: number };
   initialX: number;
   initialY: number;
+  animalCode: string;
 }
 
-const CroakingFrog = ({ gardenLayout, initialX, initialY }: CroakingFrogProps) => {
+// 모든 정원 동물 캐릭터들을 동적으로 렌더링하고 랜덤하게 통통 움직이게 하는 컴포넌트
+const GardenAnimal = ({ gardenLayout, initialX, initialY, animalCode }: GardenAnimalProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isBlinking, setIsBlinking] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -63,10 +66,8 @@ const CroakingFrog = ({ gardenLayout, initialX, initialY }: CroakingFrogProps) =
   }, [pan]);
 
   useEffect(() => {
-    // 30 seconds in milliseconds = 30,000 ms
     const interval = setInterval(() => {
       setIsBlinking(true);
-      // Blink for 500ms
       const timeout = setTimeout(() => {
         setIsBlinking(false);
       }, 500);
@@ -76,6 +77,47 @@ const CroakingFrog = ({ gardenLayout, initialX, initialY }: CroakingFrogProps) =
     return () => clearInterval(interval);
   }, []);
 
+  // 통통 랜덤하게 움직이는 효과
+  useEffect(() => {
+    let active = true;
+
+    const startRandomMovement = () => {
+      if (!active || isDragging) return;
+
+      // 원래 스폰 위치 기준 상하좌우 최대 40px 범위 내 랜덤 목적지 생성
+      const targetX = (Math.random() - 0.5) * 80;
+      const targetY = (Math.random() - 0.5) * 80;
+
+      const dx = targetX - currentPosition.current.x;
+      const dy = targetY - currentPosition.current.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const duration = Math.max(1200, distance * 35);
+
+      Animated.spring(pan, {
+        toValue: { x: targetX, y: targetY },
+        tension: 4,     // 통통 튀는 물리 탄력성
+        friction: 2.5,  // 통통 튀는 물리 마찰력
+        useNativeDriver: true,
+      }).start(() => {
+        if (!active) return;
+        // 이동 완료 후 3~6초 대기 후 다음 랜덤 움직임 시작
+        setTimeout(() => {
+          startRandomMovement();
+        }, 3000 + Math.random() * 3000);
+      });
+    };
+
+    const startTimeout = setTimeout(() => {
+      startRandomMovement();
+    }, 1500 + Math.random() * 2000);
+
+    return () => {
+      active = false;
+      clearTimeout(startTimeout);
+      pan.stopAnimation();
+    };
+  }, [isDragging]);
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -84,6 +126,7 @@ const CroakingFrog = ({ gardenLayout, initialX, initialY }: CroakingFrogProps) =
       },
       onPanResponderGrant: () => {
         setIsDragging(true);
+        pan.stopAnimation();
         startPosition.current = {
           x: currentPosition.current.x,
           y: currentPosition.current.y,
@@ -96,7 +139,6 @@ const CroakingFrog = ({ gardenLayout, initialX, initialY }: CroakingFrogProps) =
         let targetY = startPosition.current.y + gestureState.dy;
 
         if (gardenLayout.width > 0 && gardenLayout.height > 0) {
-          // Bounding constraint logic (container is 60x60)
           targetX = Math.max(0, Math.min(gardenLayout.width - 60, targetX + initialX)) - initialX;
           targetY = Math.max(0, Math.min(gardenLayout.height - 60, targetY + initialY)) - initialY;
         }
@@ -118,9 +160,10 @@ const CroakingFrog = ({ gardenLayout, initialX, initialY }: CroakingFrogProps) =
   ).current;
 
   const showActive = isHovered || isBlinking || isDragging;
-  const imageSource = showActive
-    ? require('../assets/animal/frog2.png')
-    : require('../assets/animal/frog1.png');
+  const assetKey = mapAnimalCodeToAssetKey(animalCode);
+  const activeImage = ANIMAL_ACTIVE_IMAGES[assetKey];
+  const inactiveImage = ANIMAL_INACTIVE_IMAGES[assetKey];
+  const imageSource = showActive ? activeImage : inactiveImage;
 
   return (
     <Animated.View
@@ -148,10 +191,14 @@ const CroakingFrog = ({ gardenLayout, initialX, initialY }: CroakingFrogProps) =
         onPressOut={() => setIsHovered(false)}
         style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}
       >
-        <Image
-          source={imageSource}
-          style={styles.frog}
-        />
+        {imageSource ? (
+          <Image
+            source={imageSource}
+            style={styles.frog}
+          />
+        ) : (
+          <Text style={{ fontSize: 32 }}>🐾</Text>
+        )}
       </Pressable>
     </Animated.View>
   );
@@ -167,6 +214,61 @@ const ANIMAL_COORDINATES: Record<string, { posX: number; posY: number; emoji: st
   mon: { posX: 190, posY: 240, emoji: '🐵' },
   pan: { posX: 120, posY: 80, emoji: '🐼' },
   tig: { posX: 180, posY: 130, emoji: '🐯' },
+};
+
+// 정적 에셋 로드 require 맵 (해금 연출 및 동물 매핑용)
+const ANIMAL_INACTIVE_IMAGES: Record<string, any> = {
+  frog: require('../assets/animal/frog1.png'),
+  chick: require('../assets/animal/chick1.png'),
+  pan: require('../assets/animal/pan1.png'), // penguin
+  dog: require('../assets/animal/dog1.png'),
+  cat: require('../assets/animal/cat1.png'),
+  tig: require('../assets/animal/tig1.png'), // tiger
+  bear: require('../assets/animal/bear1.png'), // panda
+  mon: require('../assets/animal/mon1.png'), // monkey
+};
+
+const ANIMAL_ACTIVE_IMAGES: Record<string, any> = {
+  frog: require('../assets/animal/frog2.png'),
+  chick: require('../assets/animal/chick2.png'),
+  pan: require('../assets/animal/pan2.png'), // penguin
+  dog: require('../assets/animal/dog2.png'),
+  cat: require('../assets/animal/cat2.png'),
+  tig: require('../assets/animal/tig2.png'), // tiger
+  bear: require('../assets/animal/bear2.png'), // panda
+  mon: require('../assets/animal/mon2.png'), // monkey
+};
+
+// 백엔드 동물 코드를 에셋 매핑 키로 변환
+const mapAnimalCodeToAssetKey = (code: string): string => {
+  switch (code) {
+    case 'penguin':
+      return 'pan';
+    case 'tiger':
+      return 'tig';
+    case 'panda':
+      return 'bear';
+    case 'monkey':
+      return 'mon';
+    default:
+      return code; // 'frog', 'chick', 'dog', 'cat'
+  }
+};
+
+const ANIMAL_NAMES: Record<string, string> = {
+  frog: '개구리',
+  chick: '병아리',
+  penguin: '펭귄',
+  dog: '강아지',
+  cat: '고양이',
+  tiger: '호랑이',
+  panda: '판다',
+  monkey: '원숭이',
+};
+
+const getRevealImage = (code: string) => {
+  const assetKey = mapAnimalCodeToAssetKey(code);
+  return ANIMAL_INACTIVE_IMAGES[assetKey] || require('../assets/animal/frog1.png');
 };
 
 export default function HomeScreen({ navigation }: HomeScreenProps) {
@@ -203,6 +305,129 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const [gardenLayout, setGardenLayout] = useState({ width: 0, height: 0 });
   const [loading, setLoading] = useState(true);
 
+  // Store previously loaded animal codes to detect new unlocks (diff)
+  const [ownedAnimalCodes, setOwnedAnimalCodes] = useState<string[] | null>(null);
+
+  // Unlock Modal Queue State
+  const [unlockQueue, setUnlockQueue] = useState<string[]>([]);
+  const [currentRevealAnimal, setCurrentRevealAnimal] = useState<string | null>('penguin');
+  const [revealStep, setRevealStep] = useState<'idle' | 'shaking' | 'revealed'>('idle');
+
+  // Animation values for Reveal
+  const shakeAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.5)).current;
+
+  // Loop wiggle animation values
+  const idleWiggleAnim = useRef(new Animated.Value(0)).current;
+  const wiggleLoopRef = useRef<Animated.CompositeAnimation | null>(null);
+
+  // 선물 상자 대기 상태(idle)일 때 자동으로 부들부들 떠는 애니메이션 실행
+  useEffect(() => {
+    if (currentRevealAnimal !== null && revealStep === 'idle') {
+      idleWiggleAnim.setValue(0);
+      wiggleLoopRef.current = Animated.loop(
+        Animated.sequence([
+          Animated.timing(idleWiggleAnim, { toValue: 1, duration: 100, useNativeDriver: true }),
+          Animated.timing(idleWiggleAnim, { toValue: -1, duration: 100, useNativeDriver: true }),
+          Animated.timing(idleWiggleAnim, { toValue: 1, duration: 100, useNativeDriver: true }),
+          Animated.timing(idleWiggleAnim, { toValue: -1, duration: 100, useNativeDriver: true }),
+          Animated.timing(idleWiggleAnim, { toValue: 0, duration: 800, useNativeDriver: true }), // 쉬는 구간
+        ])
+      );
+      wiggleLoopRef.current.start();
+    } else {
+      if (wiggleLoopRef.current) {
+        wiggleLoopRef.current.stop();
+      }
+      idleWiggleAnim.setValue(0);
+    }
+    return () => {
+      if (wiggleLoopRef.current) {
+        wiggleLoopRef.current.stop();
+      }
+    };
+  }, [currentRevealAnimal, revealStep]);
+
+  // Shake animation sequence: left, right, left, right, center
+  const startShake = () => {
+    if (wiggleLoopRef.current) {
+      wiggleLoopRef.current.stop();
+    }
+    idleWiggleAnim.setValue(0);
+
+    setRevealStep('shaking');
+    Animated.sequence([
+      Animated.timing(shakeAnim, { toValue: 15, duration: 60, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: -15, duration: 60, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 15, duration: 60, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: -15, duration: 60, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 15, duration: 60, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: -15, duration: 60, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 0, duration: 60, useNativeDriver: true }),
+    ]).start(() => {
+      triggerReveal();
+    });
+  };
+
+  // Fade in and scale up the animal sprite
+  const triggerReveal = () => {
+    setRevealStep('revealed');
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1.2,
+        friction: 5,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const triggerUnlockReveal = (newlyUnlocked: string[]) => {
+    const first = newlyUnlocked[0];
+    const rest = newlyUnlocked.slice(1);
+    setUnlockQueue(rest);
+    setCurrentRevealAnimal(first);
+    setRevealStep('idle');
+  };
+
+  const handleConfirmReveal = () => {
+    fadeAnim.setValue(0);
+    scaleAnim.setValue(0.5);
+    shakeAnim.setValue(0);
+
+    if (unlockQueue.length > 0) {
+      const nextAnimal = unlockQueue[0];
+      setUnlockQueue(unlockQueue.slice(1));
+      setCurrentRevealAnimal(nextAnimal);
+      setRevealStep('idle');
+    } else {
+      setCurrentRevealAnimal(null);
+      setRevealStep('idle');
+    }
+  };
+
+  const interpolatedWiggle = idleWiggleAnim.interpolate({
+    inputRange: [-1, 1],
+    outputRange: ['-4deg', '4deg'],
+  });
+
+  const interpolatedShake = shakeAnim.interpolate({
+    inputRange: [-15, 15],
+    outputRange: ['-15deg', '15deg'],
+  });
+
+  const shakeStyle = {
+    transform: [
+      { rotate: interpolatedWiggle },
+      { rotate: interpolatedShake }
+    ],
+  };
+
   // 홈 화면 데이터 로드
   const loadHomeData = async () => {
     try {
@@ -210,9 +435,9 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       const res = await homeApi.getHome();
       if (res.success && res.data) {
         const { character, today_missions } = res.data;
-        
-        // 경험치 및 레벨 설정
-        setTotalPoints(character.total_exp);
+
+        // 경험치 및 레벨 설정 (current_level_exp를 나뭇잎 옆 포인트 값으로 매핑)
+        setTotalPoints(character.current_level_exp);
         setUserLevel(character.level);
 
         // 오늘 미션 목록 매핑
@@ -235,18 +460,52 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         });
         setMissions(mappedMissions);
 
-        // 보유 중인 캐릭터 동적 좌표 매핑
-        const mappedCharacters = character.owned_animals.map((animal, idx) => {
-          const coord = ANIMAL_COORDINATES[animal.animal_code] || { posX: 50 + (idx * 30), posY: 100 + (idx * 20), emoji: '🐾' };
-          return {
-            id: idx + 1,
-            emoji: coord.emoji,
-            level: idx === 0 ? character.level : null, // 주 캐릭터에만 레벨 노출
-            posX: coord.posX,
-            posY: coord.posY,
-          };
+        // 보유 중인 캐릭터 동적 좌표 매핑 (최대 3마리 제한)
+        const animalCounts: Record<string, number> = {};
+        const mappedCharacters: any[] = [];
+        
+        character.owned_animals.forEach((animal, idx) => {
+          const code = animal.animal_code;
+          const count = (animalCounts[code] || 0) + 1;
+          animalCounts[code] = count;
+          
+          if (count <= 3) {
+            // 백엔드 동물 코드를 원래 좌표 키(bear, pan, tig, mon)로 매핑
+            let coordKey = code;
+            if (coordKey === 'panda') coordKey = 'bear';
+            if (coordKey === 'penguin') coordKey = 'pan';
+            if (coordKey === 'tiger') coordKey = 'tig';
+            if (coordKey === 'monkey') coordKey = 'mon';
+
+            const coord = ANIMAL_COORDINATES[coordKey] || { posX: 50 + (idx * 30), posY: 100 + (idx * 20), emoji: '🐾' };
+            
+            // 중복 동물일 경우 스폰 위치에 가로 35px 오프셋을 부여하여 겹침 방지
+            const spawnOffset = (count - 1) * 35;
+            
+            mappedCharacters.push({
+              id: `${code}_${count}`,
+              animalCode: code,
+              emoji: coord.emoji,
+              level: null, // 레벨 라벨은 제거됨
+              posX: coord.posX + spawnOffset,
+              posY: coord.posY + (count > 1 ? 15 : 0),
+            });
+          }
         });
         setCharacters(mappedCharacters);
+
+        // 이전 소유 동물 목록과 비교해 신규 해금 동물(Diff) 감지
+        const currentAnimalCodes = character.owned_animals.map(a => a.animal_code);
+        if (ownedAnimalCodes === null) {
+          // 최초 로드 시에는 애니메이션 연출을 트리거하지 않고 상태만 동기화
+          setOwnedAnimalCodes(currentAnimalCodes);
+        } else {
+          const newlyUnlocked = currentAnimalCodes.filter(code => !ownedAnimalCodes.includes(code));
+          setOwnedAnimalCodes(currentAnimalCodes);
+          if (newlyUnlocked.length > 0) {
+            triggerUnlockReveal(newlyUnlocked);
+          }
+        }
       }
     } catch (error) {
       console.error('홈 화면 데이터 로딩 실패:', error);
@@ -363,7 +622,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         await missionApi.completeMission(activeMissionId);
         setIsVerifyModalVisible(false);
         Alert.alert('미션 인증 완료', '미션 인증이 완료되어 포인트(XP)가 지급되었습니다!');
-        
+
         // 홈 데이터 리로드하여 실시간으로 포인트 및 동물 성장 상태 반영
         await loadHomeData();
       } catch (error) {
@@ -388,15 +647,9 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         </View>
 
         <View style={styles.headerRight}>
-          {/* Flame streak badge */}
-          <View style={styles.streakBadge}>
-            <Text style={styles.badgeIcon}>🔥</Text>
-            <Text style={styles.badgeText}>{streakDays}일</Text>
-          </View>
-
           {/* Points badge */}
-          <View style={[styles.pointsBadge, { backgroundColor: '#2E5E35' }]}>
-            <Text style={styles.badgeIcon}>🌿</Text>
+          <View style={[styles.pointsBadge, { backgroundColor: '#2E5E35', gap: 6, paddingHorizontal: 10 }]}>
+            <Leaf color="#ffffff" size={14} fill="#ffffff" />
             <Text style={[styles.badgeText, { color: '#ffffff' }]}>{totalPoints}</Text>
           </View>
         </View>
@@ -426,21 +679,13 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               },
             ]}
           >
-            {char.level !== null && (
-              <Text style={[styles.animalLevel, { color: theme.textDark }]}>
-                Lv {char.level}
-              </Text>
-            )}
             <View style={styles.emojiWrapper}>
-              {char.emoji === '🐸' ? (
-                <CroakingFrog
-                  gardenLayout={gardenLayout}
-                  initialX={char.posX}
-                  initialY={char.posY}
-                />
-              ) : (
-                <Text style={styles.animalEmoji}>{char.emoji}</Text>
-              )}
+              <GardenAnimal
+                gardenLayout={gardenLayout}
+                initialX={char.posX}
+                initialY={char.posY}
+                animalCode={char.animalCode}
+              />
             </View>
           </View>
         ))}
@@ -630,6 +875,51 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             >
               <Text style={styles.levelUpCloseBtnText}>정원으로 돌아가기</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Animal Unlock Reveal Modal */}
+      <Modal
+        visible={currentRevealAnimal !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCurrentRevealAnimal(null)}
+      >
+        <View style={styles.revealModalOverlay}>
+          <View style={styles.revealModalContainer}>
+            {revealStep !== 'revealed' ? (
+              <Pressable onPress={startShake} style={styles.revealInteractArea}>
+                <Animated.View style={[shakeStyle, styles.giftBoxWrapper]}>
+                  <Image source={require('../assets/giftbox.png')} style={styles.giftBoxImage} />
+                </Animated.View>
+                <Text style={styles.revealInteractText}>
+                  {revealStep === 'shaking' ? '깨어나는 중...' : '선물이 도착했어요!\n톡! 눌러서 확인해보세요'}
+                </Text>
+              </Pressable>
+            ) : (
+              <View style={styles.revealSuccessContainer}>
+                <Text style={styles.revealSuccessTitle}>새로운 친구 등장!</Text>
+
+                <Animated.View style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }], marginVertical: 20 }}>
+                  <Image
+                    source={getRevealImage(currentRevealAnimal!)}
+                    style={styles.revealAnimalImage}
+                  />
+                </Animated.View>
+
+                <Text style={styles.revealSuccessText}>
+                  새로운 친구 {ANIMAL_NAMES[currentRevealAnimal!] || currentRevealAnimal}이 정원에 합류했습니다!
+                </Text>
+
+                <TouchableOpacity
+                  style={[styles.revealConfirmButton, { backgroundColor: COLORS.primary }]}
+                  onPress={handleConfirmReveal}
+                >
+                  <Text style={styles.revealConfirmButtonText}>정원 가기</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </View>
       </Modal>
@@ -937,6 +1227,81 @@ const styles = StyleSheet.create({
   frog: {
     width: 60,
     height: 60,
+    resizeMode: 'contain',
+  },
+  revealModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  revealModalContainer: {
+    width: '85%',
+    backgroundColor: '#ffffff',
+    borderRadius: 28,
+    padding: 30,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 15,
+    elevation: 10,
+  },
+  revealInteractArea: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+    gap: 20,
+  },
+  giftBoxWrapper: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  revealInteractText: {
+    fontSize: 16,
+    fontWeight: '700',
+    textAlign: 'center',
+    lineHeight: 22,
+    color: '#1C2E21',
+  },
+  revealSuccessContainer: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  revealSuccessTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#2E5E35',
+  },
+  revealAnimalImage: {
+    width: 120,
+    height: 120,
+    resizeMode: 'contain',
+  },
+  revealSuccessText: {
+    fontSize: 15,
+    fontWeight: '600',
+    textAlign: 'center',
+    lineHeight: 22,
+    color: '#1C2E21',
+    marginVertical: 15,
+  },
+  revealConfirmButton: {
+    width: '100%',
+    height: 52,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  revealConfirmButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  giftBoxImage: {
+    width: 400,
+    height: 400,
     resizeMode: 'contain',
   },
 });
