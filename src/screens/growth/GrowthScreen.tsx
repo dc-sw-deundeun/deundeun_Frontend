@@ -4,7 +4,7 @@ import Text from '@/components/Text';
 import { COLORS, SPACING } from '@/constants/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Flame, Star, Award } from 'lucide-react-native';
+import { Star, Award, PawPrint, Lock } from 'lucide-react-native';
 import ScreenHeader from '@/components/ScreenHeader';
 import Card from '@/components/Card';
 import { useFocusEffect } from '@react-navigation/native';
@@ -90,6 +90,9 @@ export default function GrowthScreen() {
   const progressPercent = `${((characterInfo?.progress_ratio ?? 0) * 100).toFixed(0)}%`;
   const totalExp = characterInfo?.total_exp ?? 0;
 
+  // 전체 카탈로그 중 고유하게 획득한 동물 수 계산 (중복 제외)
+  const uniqueOwnedCount = animalsCatalog.filter(a => a.is_unlocked).length;
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top', 'left', 'right']}>
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
@@ -111,7 +114,7 @@ export default function GrowthScreen() {
               <View style={[styles.progressBarFill, { backgroundColor: COLORS.primary, width: progressPercent }]} />
             </View>
             <Text style={[styles.progressHelpText, { color: theme.textMuted }]}>
-              12일 연속 건강 기록 달성 중! (+15 XP 추가 획득 가능)
+              다음 레벨(Lv {currentLevel + 1})까지 {expToNext} XP 남았어요!
             </Text>
 
             <View style={[styles.divider, { backgroundColor: theme.border }]} />
@@ -119,10 +122,10 @@ export default function GrowthScreen() {
             {/* Statistics Grid */}
             <View style={styles.statsGrid}>
               <View style={styles.statBox}>
-                <Flame color={COLORS.warning} size={22} fill={COLORS.warning} />
+                <PawPrint color={COLORS.primary} size={22} fill={COLORS.primaryLight} />
                 <View style={styles.statInfo}>
-                  <Text style={[styles.statValue, { color: theme.text }]}>28일</Text>
-                  <Text style={[styles.statLabel, { color: theme.textMuted }]}>연속 실천</Text>
+                  <Text style={[styles.statValue, { color: theme.text }]}>{uniqueOwnedCount} / {animalsCatalog.length}종</Text>
+                  <Text style={[styles.statLabel, { color: theme.textMuted }]}>보유 동물</Text>
                 </View>
               </View>
 
@@ -138,13 +141,20 @@ export default function GrowthScreen() {
 
           {/* Companions Grid */}
           <View style={styles.companionsSection}>
-            <Text style={[styles.companionsTitle, { color: theme.text }]}>함께 자란 친구들</Text>
+            <Text style={[styles.companionsTitle, { color: theme.text }]}>
+              함께 자란 친구들 ({uniqueOwnedCount} / {animalsCatalog.length})
+            </Text>
 
             <View style={styles.companionsGrid}>
               {animalsCatalog.map((animal) => {
                 const assetKey = mapAnimalCodeToAssetKey(animal.animal_code);
                 const imageSource = ANIMAL_IMAGES[assetKey];
                 const isUnlocked = animal.is_unlocked;
+
+                // 유저의 실제 owned_animals 배열에서 동일한 동물이 몇 마리 있는지 세어 해당 동물의 레벨 계산
+                const animalLevel = characterInfo?.owned_animals.filter(
+                  (owned) => owned.animal_code === animal.animal_code
+                ).length ?? 0;
 
                 return (
                   <View
@@ -162,37 +172,32 @@ export default function GrowthScreen() {
                   >
                     {isUnlocked ? (
                       <>
-                        <View style={[styles.emojiCircle, { backgroundColor: theme.background }]}>
+                        <View style={styles.imageContainer}>
                           {imageSource ? (
                             <Image source={imageSource} style={styles.companionImage} />
                           ) : (
-                            <Text style={styles.companionEmoji}>🐾</Text>
+                            <PawPrint color={theme.textMuted} size={24} />
                           )}
                         </View>
-                        <Text style={[styles.companionName, { color: theme.text }]} numberOfLines={1}>{animal.name}</Text>
-                        <View style={[styles.levelBadge, { backgroundColor: COLORS.primaryLight }]}>
-                          <Text style={[styles.levelText, { color: COLORS.primaryDark }]}>
-                            Lv {animal.unlock_level}
-                          </Text>
+                        <View style={styles.nameAndLevelColumn}>
+                          <Text style={[styles.companionName, { color: theme.text }]} numberOfLines={1}>{animal.name}</Text>
+                          <View style={[styles.levelBadge, { backgroundColor: COLORS.primaryLight }]}>
+                            <Text style={[styles.levelText, { color: COLORS.primaryDark }]}>
+                              Lv {animalLevel}
+                            </Text>
+                          </View>
                         </View>
                       </>
                     ) : (
                       <>
-                        <View style={[styles.emojiCircle, { backgroundColor: theme.background, opacity: 0.7 }]}>
-                          {imageSource ? (
-                            <View style={styles.imageOverlayContainer}>
-                              <Image source={imageSource} style={[styles.companionImage, { opacity: 0.15 }]} />
-                              <View style={[StyleSheet.absoluteFill, styles.lockOverlay]}>
-                                <Text style={styles.lockText}>🔒</Text>
-                              </View>
-                            </View>
-                          ) : (
-                            <Text style={[styles.companionEmoji, { fontSize: 24 }]}>🔒</Text>
-                          )}
+                        <View style={styles.imageContainer}>
+                          <Lock color={theme.textMuted} size={38} />
                         </View>
-                        <Text style={[styles.companionName, { color: theme.textMuted }]} numberOfLines={1}>잠김</Text>
-                        <View style={[styles.levelBadge, { backgroundColor: theme.border }]}>
-                          <Text style={[styles.levelText, { color: theme.textMuted }]}>Lv {animal.unlock_level}</Text>
+                        <View style={styles.nameAndLevelColumn}>
+                          <Text style={[styles.companionName, { color: theme.textMuted }]} numberOfLines={1}>잠김</Text>
+                          <View style={[styles.levelBadge, { backgroundColor: theme.border }]}>
+                            <Text style={[styles.levelText, { color: theme.textMuted }]}>Lv --</Text>
+                          </View>
                         </View>
                       </>
                     )}
@@ -288,44 +293,48 @@ const styles = StyleSheet.create({
   },
   companionCard: {
     width: '30.5%',
-    aspectRatio: 0.85,
+    aspectRatio: 0.72,
     borderRadius: 20,
     borderWidth: 1.5,
-    padding: SPACING.sm,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: 35,
   },
-  emojiCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  imageContainer: {
+    width: 80,
+    height: 80,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  companionEmoji: {
-    fontSize: 28,
   },
   companionImage: {
-    width: 34,
-    height: 34,
+    width: 76,
+    height: 76,
     resizeMode: 'contain',
+    ...Platform.select({
+      web: {
+        imageRendering: 'auto',
+      },
+    }) as any,
+  },
+  nameAndLevelColumn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    gap: 10,
   },
   companionName: {
-    fontSize: 12,
+    fontSize: 15,
     fontWeight: '700',
   },
   levelBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
     borderRadius: 6,
   },
   levelText: {
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: '800',
   },
   imageOverlayContainer: {
@@ -338,8 +347,5 @@ const styles = StyleSheet.create({
   lockOverlay: {
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  lockText: {
-    fontSize: 16,
   },
 });
