@@ -15,6 +15,10 @@ export type RootStackParamList = {
   Register: undefined;
   Terms: undefined;
   DeviceSync: undefined;
+  CheckupOcr: undefined;
+  CheckupResult: {
+    data?: any; // To pass OCR results
+  };
   Welcome: undefined;
   MainTabs: NavigatorScreenParams<MainTabParamList>;
   Details: {
@@ -22,19 +26,29 @@ export type RootStackParamList = {
     otherParam?: string;
   };
   HealthReport: {
-    date: string;
+    recordId?: number;
+    date?: string;
     bloodSugar?: number;
     bloodPressure?: string;
     cholesterol?: number;
     bmi?: number;
   } | undefined;
   EditResults: undefined;
+  EditRecord: {
+    recordId: number;
+  };
+  MetricDetail: {
+    recordId: number;
+    metricCode: string;
+    metricName: string;
+    value: string;
+    unit: string | null;
+  };
   SearchBrowse: undefined;
   ChangePassword: undefined;
   ConnectedApps: undefined;
   Notifications: undefined;
 };
 
-export type RootStackScreenProps<T extends keyof RootStackParamList> = 
+export type RootStackScreenProps<T extends keyof RootStackParamList> =
   NativeStackScreenProps<RootStackParamList, T>;
-
