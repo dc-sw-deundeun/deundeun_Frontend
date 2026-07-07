@@ -52,6 +52,9 @@ const GardenAnimal = ({ gardenLayout, initialX, initialY, animalCode }: GardenAn
   const currentPosition = useRef({ x: 0, y: 0 });
   const startPosition = useRef({ x: 0, y: 0 });
 
+  // 사용자가 드래그해서 옮겨놓은 자리를 새로운 이동의 중심점으로 유지하는 레프
+  const basePosition = useRef({ x: 0, y: 0 });
+
   useEffect(() => {
     const xId = pan.x.addListener((v) => {
       currentPosition.current.x = v.value;
@@ -84,26 +87,31 @@ const GardenAnimal = ({ gardenLayout, initialX, initialY, animalCode }: GardenAn
     const startRandomMovement = () => {
       if (!active || isDragging) return;
 
-      // 원래 스폰 위치 기준 상하좌우 최대 40px 범위 내 랜덤 목적지 생성
-      const targetX = (Math.random() - 0.5) * 80;
-      const targetY = (Math.random() - 0.5) * 80;
+      // 드래그된 basePosition 기준 상하좌우 최대 40px 범위 내 랜덤 절대 목적지 계산
+      let absTargetX = initialX + basePosition.current.x + (Math.random() - 0.5) * 80;
+      let absTargetY = initialY + basePosition.current.y + (Math.random() - 0.5) * 80;
 
-      const dx = targetX - currentPosition.current.x;
-      const dy = targetY - currentPosition.current.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      const duration = Math.max(1200, distance * 35);
+      // 정원 경계 및 오늘의 미션 바텀시트 영역(height - 180)과 겹치지 않게 제한
+      if (gardenLayout.width > 0 && gardenLayout.height > 0) {
+        absTargetX = Math.max(0, Math.min(gardenLayout.width - 60, absTargetX));
+        absTargetY = Math.max(0, Math.min(gardenLayout.height - 180, absTargetY));
+      }
+
+      // 상대적인 x, y 값으로 변환하여 애니메이션 처리
+      const targetX = absTargetX - initialX;
+      const targetY = absTargetY - initialY;
 
       Animated.spring(pan, {
         toValue: { x: targetX, y: targetY },
-        tension: 4,     // 통통 튀는 물리 탄력성
-        friction: 2.5,  // 통통 튀는 물리 마찰력
+        tension: 1.2,   // 움직임 속도를 아주 느리고 부드럽게 설정
+        friction: 12,   // 마찰력을 높여 통통 튀는 반동 wobbly 현상을 극도로 억제
         useNativeDriver: true,
       }).start(() => {
         if (!active) return;
-        // 이동 완료 후 3~6초 대기 후 다음 랜덤 움직임 시작
+        // 이동 완료 후 5~10초간 느긋하게 대기 후 다시 이동
         setTimeout(() => {
           startRandomMovement();
-        }, 3000 + Math.random() * 3000);
+        }, 5000 + Math.random() * 5000);
       });
     };
 
@@ -116,7 +124,7 @@ const GardenAnimal = ({ gardenLayout, initialX, initialY, animalCode }: GardenAn
       clearTimeout(startTimeout);
       pan.stopAnimation();
     };
-  }, [isDragging]);
+  }, [isDragging, gardenLayout]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -138,9 +146,10 @@ const GardenAnimal = ({ gardenLayout, initialX, initialY, animalCode }: GardenAn
         let targetX = startPosition.current.x + gestureState.dx;
         let targetY = startPosition.current.y + gestureState.dy;
 
+        // 드래그할 때도 오늘의 미션 시트와 겹치지 않게 가든 영역(height - 180) 밖으로 나가지 못하게 제한
         if (gardenLayout.width > 0 && gardenLayout.height > 0) {
           targetX = Math.max(0, Math.min(gardenLayout.width - 60, targetX + initialX)) - initialX;
-          targetY = Math.max(0, Math.min(gardenLayout.height - 60, targetY + initialY)) - initialY;
+          targetY = Math.max(0, Math.min(gardenLayout.height - 180, targetY + initialY)) - initialY;
         }
 
         const nextX = targetX - startPosition.current.x;
@@ -151,6 +160,12 @@ const GardenAnimal = ({ gardenLayout, initialX, initialY, animalCode }: GardenAn
       onPanResponderRelease: () => {
         setIsDragging(false);
         pan.flattenOffset();
+
+        // 드래그 완료 후 손을 놓은 자리를 새로운 랜덤 배회의 중심 스폰지로 갱신
+        basePosition.current = {
+          x: (pan.x as any)._value,
+          y: (pan.y as any)._value,
+        };
       },
       onPanResponderTerminate: () => {
         setIsDragging(false);
@@ -463,12 +478,12 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         // 보유 중인 캐릭터 동적 좌표 매핑 (최대 3마리 제한)
         const animalCounts: Record<string, number> = {};
         const mappedCharacters: any[] = [];
-        
+
         character.owned_animals.forEach((animal, idx) => {
           const code = animal.animal_code;
           const count = (animalCounts[code] || 0) + 1;
           animalCounts[code] = count;
-          
+
           if (count <= 3) {
             // 백엔드 동물 코드를 원래 좌표 키(bear, pan, tig, mon)로 매핑
             let coordKey = code;
@@ -478,10 +493,10 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             if (coordKey === 'monkey') coordKey = 'mon';
 
             const coord = ANIMAL_COORDINATES[coordKey] || { posX: 50 + (idx * 30), posY: 100 + (idx * 20), emoji: '🐾' };
-            
+
             // 중복 동물일 경우 스폰 위치에 가로 35px 오프셋을 부여하여 겹침 방지
             const spawnOffset = (count - 1) * 35;
-            
+
             mappedCharacters.push({
               id: `${code}_${count}`,
               animalCode: code,
