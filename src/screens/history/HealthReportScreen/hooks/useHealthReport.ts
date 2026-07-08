@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 import { recordsApi, MetricResponse } from '@/api';
+import { useAppStore } from '@/store/useAppStore';
 
 // 검진 결과 상세 보고서의 데이터 조회 및 액션(검수/삭제/미션추가)을 담당하는 훅
 export const useHealthReport = (recordId: number | undefined, onDeleted: () => void) => {
@@ -42,7 +43,7 @@ export const useHealthReport = (recordId: number | undefined, onDeleted: () => v
       }
     } catch (e) {
       console.warn('검진 결과 상세 로드 실패:', e);
-      Alert.alert('오류', '검진 정보를 불러오지 못했습니다.');
+      useAppStore.getState().showAlert('오류', '검진 정보를 불러오지 못했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -68,13 +69,13 @@ export const useHealthReport = (recordId: number | undefined, onDeleted: () => v
       
       if (res.success) {
         setVerificationStatus('VERIFIED');
-        Alert.alert('저장 완료', '사용자 확인이 완료되어 검진 기록이 저장되었습니다.');
+        useAppStore.getState().showAlert('저장 완료', '사용자 확인이 완료되어 검진 기록이 저장되었습니다.');
       } else {
-        Alert.alert('오류', res.message || '저장에 실패했습니다.');
+        useAppStore.getState().showAlert('오류', res.message || '저장에 실패했습니다.');
       }
     } catch (e) {
       console.error(e);
-      Alert.alert('오류', '검수 처리 중 서버 통신에 실패했습니다.');
+      useAppStore.getState().showAlert('오류', '검수 처리 중 서버 통신에 실패했습니다.');
     }
   };
 
@@ -95,7 +96,7 @@ export const useHealthReport = (recordId: number | undefined, onDeleted: () => v
   const handleAddMission = (missionName: string) => {
     if (addedMissions.includes(missionName)) return;
     setAddedMissions((prev) => [...prev, missionName]);
-    Alert.alert('미션 추가 완료', `"${missionName}"이(가) 오늘의 미션으로 추가되었습니다!`);
+    useAppStore.getState().showAlert('미션 추가 완료', `"${missionName}"이(가) 오늘의 미션으로 추가되었습니다!`);
   };
 
   return {

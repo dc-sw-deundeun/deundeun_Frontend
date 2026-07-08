@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Alert } from 'react-native';
 import { useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
+import { useAppStore } from '@/store/useAppStore';
 import { recordsApi } from '@/api';
 import { RootStackScreenProps } from '@/types/navigation';
 
@@ -31,7 +32,7 @@ export const useOcrCapture = (navigation: RootStackScreenProps<'CheckupOcr'>['na
 
   const handleTakePicture = async () => {
     if (images.length >= 10) {
-      Alert.alert('안내', '최대 10장까지 스캔 가능합니다.');
+      useAppStore.getState().showAlert('안내', '최대 10장까지 스캔 가능합니다.');
       return;
     }
     if (cameraRef.current) {
@@ -49,7 +50,7 @@ export const useOcrCapture = (navigation: RootStackScreenProps<'CheckupOcr'>['na
 
   const handlePickImage = async () => {
     if (images.length >= 10) {
-      Alert.alert('안내', '최대 10장까지 등록 가능합니다.');
+      useAppStore.getState().showAlert('안내', '최대 10장까지 등록 가능합니다.');
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({

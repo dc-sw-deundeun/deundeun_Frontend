@@ -9,6 +9,7 @@ import { RootStackParamList, MainTabParamList } from '@/types/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import { COLORS } from '@/constants/theme';
 import Svg, { Path } from 'react-native-svg';
+import GlobalModal from '@/components/GlobalModal';
 
 // Import Screens
 import SplashScreen from '@/screens/auth/SplashScreen';
@@ -351,6 +352,7 @@ export const AppNavigator = () => {
         <Stack.Screen name="ConnectedApps" component={ConnectedAppsScreen} />
         <Stack.Screen name="Notifications" component={NotificationsScreen} />
       </Stack.Navigator>
+      <GlobalModal />
     </NavigationContainer>
   );
 };

@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import React from 'react';
 import { missionApi } from '@/api';
 import { DailyMission } from '../types';
+import { useAppStore } from '@/store/useAppStore';
 
 // 오늘의 미션 목록 조회 및 인증 처리를 담당하는 훅
 export const useTodayMissions = () => {
@@ -55,13 +56,13 @@ export const useTodayMissions = () => {
         setLoading(true);
         await missionApi.completeMission(activeMissionId);
         setIsVerifyModalVisible(false);
-        Alert.alert('미션 인증 완료', '미션 인증이 완료되어 XP가 지급되었습니다!');
+        useAppStore.getState().showAlert('미션 인증 완료', '미션 인증이 완료되어 XP가 지급되었습니다!');
 
         // 목록 다시 로드하여 완료 상태 업데이트
         await loadTodayMissions();
       } catch (error) {
         console.error('미션 인증 실패:', error);
-        Alert.alert('오류', '미션 인증 처리 중 오류가 발생했습니다.');
+        useAppStore.getState().showAlert('오류', '미션 인증 처리 중 오류가 발생했습니다.');
       } finally {
         setLoading(false);
       }

@@ -13,7 +13,7 @@ import { ExplanationSheet } from './components/ExplanationSheet';
 import { useSearchDiseases } from './hooks/useSearchDiseases';
 
 export default function SearchBrowseScreen({ navigation }: RootStackScreenProps<'SearchBrowse'>) {
-  const { isDarkMode } = useAppStore();
+  const { isDarkMode, showAlert } = useAppStore();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
 
   const [showExplanationSheet, setShowExplanationSheet] = useState(false);
@@ -109,7 +109,7 @@ export default function SearchBrowseScreen({ navigation }: RootStackScreenProps<
         onClose={() => setShowExplanationSheet(false)}
         onRequestMission={() => {
           setShowExplanationSheet(false);
-          Alert.alert('미션 등록', '이 지표를 개선하기 위한 맞춤 추천 미션이 추가되었습니다!');
+          showAlert('미션 등록', '이 지표를 개선하기 위한 맞춤 추천 미션이 추가되었습니다!');
         }}
         theme={theme}
       />

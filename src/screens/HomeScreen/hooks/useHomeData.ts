@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import React from 'react';
 import { Alert } from 'react-native';
+import { useAppStore } from '@/store/useAppStore';
 import { useFocusEffect } from '@react-navigation/native';
 import { homeApi, missionApi } from '@/api';
 import { Mission, AnimalCharacter } from '../types';
@@ -134,7 +135,7 @@ export const useHomeData = (onNewUnlock: (newlyUnlocked: string[]) => void) => {
     if (!mission) return;
 
     if (mission.completed) {
-      Alert.alert('알림', '이미 완료된 미션입니다.');
+      useAppStore.getState().showAlert('알림', '이미 완료된 미션입니다.');
     } else {
       setActiveMissionId(id);
       setIsVerifyModalVisible(true);
@@ -148,13 +149,13 @@ export const useHomeData = (onNewUnlock: (newlyUnlocked: string[]) => void) => {
         // 서버에 미션 완료 요청 전송
         await missionApi.completeMission(activeMissionId);
         setIsVerifyModalVisible(false);
-        Alert.alert('미션 인증 완료', '미션 인증이 완료되어 포인트(XP)가 지급되었습니다!');
+        useAppStore.getState().showAlert('미션 인증 완료', '미션 인증이 완료되어 포인트(XP)가 지급되었습니다!');
 
         // 홈 데이터 리로드하여 실시간으로 포인트 및 동물 성장 상태 반영
         await loadHomeData();
       } catch (error) {
         console.error('미션 완료 처리 실패:', error);
-        Alert.alert('오류', '미션 완료 처리 중 오류가 발생했습니다.');
+        useAppStore.getState().showAlert('오류', '미션 완료 처리 중 오류가 발생했습니다.');
       } finally {
         setLoading(false);
       }
