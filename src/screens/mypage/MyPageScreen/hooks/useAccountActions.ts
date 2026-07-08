@@ -24,9 +24,7 @@ export const useAccountActions = (navigation: any) => {
   const handleLogout = async () => {
     try {
       const refreshToken = await storage.getRefreshToken();
-      if (refreshToken) {
-        await authApi.logout(refreshToken);
-      }
+      await authApi.logout(refreshToken || '');
     } catch (error) {
       console.error('로그아웃 API 호출 실패:', error);
     } finally {
