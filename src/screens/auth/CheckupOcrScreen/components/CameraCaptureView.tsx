@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, Animated, StyleSheet as RNStyleSheet } from 'react-native';
 import Text from '@/components/Text';
 import { CameraView } from 'expo-camera';
-import { Camera as CameraIcon, Power, PowerOff } from 'lucide-react-native';
+import { Camera as CameraIcon, Power, PowerOff, Image as ImageIcon } from 'lucide-react-native';
 import { styles } from '../CheckupOcrScreen.styles';
 
 interface CameraCaptureViewProps {
@@ -12,6 +12,7 @@ interface CameraCaptureViewProps {
   scanLineAnim: Animated.Value;
   onToggleCamera: () => void;
   onTakePicture: () => void;
+  onPickImage: () => void;
 }
 
 export const CameraCaptureView: React.FC<CameraCaptureViewProps> = ({
@@ -21,6 +22,7 @@ export const CameraCaptureView: React.FC<CameraCaptureViewProps> = ({
   scanLineAnim,
   onToggleCamera,
   onTakePicture,
+  onPickImage,
 }) => {
   return (
     <View style={styles.cameraContainer}>
@@ -31,11 +33,6 @@ export const CameraCaptureView: React.FC<CameraCaptureViewProps> = ({
           ref={cameraRef}
         >
           <View style={styles.cameraOverlay}>
-            {/* Camera Toggle Button */}
-            <TouchableOpacity style={styles.cameraToggleBtn} onPress={onToggleCamera}>
-              <PowerOff color="#ffffff" size={20} />
-            </TouchableOpacity>
-
             {/* 4 Corners */}
             <View style={[styles.corner, styles.topLeft]} />
             <View style={[styles.corner, styles.topRight]} />
@@ -57,21 +54,26 @@ export const CameraCaptureView: React.FC<CameraCaptureViewProps> = ({
               ]}
             />
 
-            {/* Take Picture Hidden Button (Full screen touch area over camera) */}
-            <TouchableOpacity style={RNStyleSheet.absoluteFill} onPress={onTakePicture} />
+            {/* Bottom Controls */}
+            <View style={styles.bottomControlsContainer}>
+              {/* Album Button */}
+              <TouchableOpacity style={styles.albumBtn} onPress={onPickImage}>
+                <ImageIcon color="#ffffff" size={28} />
+                <Text style={styles.albumText}>앨범</Text>
+              </TouchableOpacity>
 
-            {/* Bottom Auto Scan Text */}
-            <View style={styles.autoScanContainer} pointerEvents="none">
-              <View style={styles.spinnerCircle} />
-              <Text style={styles.autoScanText}>자동으로 읽고 있어요</Text>
+              {/* Capture Button */}
+              <TouchableOpacity style={styles.captureBtn} onPress={onTakePicture}>
+                <View style={styles.captureBtnInner} />
+              </TouchableOpacity>
+              
+              {/* Empty placeholder to center the capture button properly */}
+              <View style={styles.albumBtn} />
             </View>
           </View>
         </CameraView>
       ) : (
         <View style={styles.cameraPlaceholder}>
-          <TouchableOpacity style={styles.cameraToggleBtn} onPress={onToggleCamera}>
-            <Power color="#ffffff" size={20} />
-          </TouchableOpacity>
           <CameraIcon color="#808080" size={40} style={{ marginBottom: 10 }} />
           <Text style={{ color: '#ffffff', fontSize: 14 }}>카메라가 꺼져 있습니다.</Text>
         </View>
