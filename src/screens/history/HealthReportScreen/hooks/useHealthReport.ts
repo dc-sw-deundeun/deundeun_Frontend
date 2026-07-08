@@ -49,9 +49,9 @@ export const useHealthReport = (recordId: number | undefined, onDeleted: () => v
   };
 
   const handleVerify = async () => {
-    if (!recordId || !recordData) return;
+    if (!recordId) return;
     try {
-      const analysisMetrics = recordData.metrics.map(m => ({
+      const analysisMetrics = metrics.map(m => ({
         metric_code: m.metric_code,
         metric_name: m.metric_name,
         value: String(m.value || ''),
