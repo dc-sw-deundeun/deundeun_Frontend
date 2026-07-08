@@ -74,6 +74,28 @@ export const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
+  checkRowContainer: {
+    flexDirection: 'column',
+  },
+  chevronContainer: {
+    padding: SPACING.xs,
+    marginLeft: 'auto',
+  },
+  detailsContainer: {
+    marginTop: -SPACING.sm,
+    marginBottom: SPACING.md,
+    marginHorizontal: SPACING.sm,
+    padding: SPACING.sm,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0,0,0,0.03)',
+  },
+  detailsScrollView: {
+    maxHeight: 120,
+  },
+  detailsText: {
+    fontSize: 13,
+    lineHeight: 20,
+  },
 });
 
 export default styles;
