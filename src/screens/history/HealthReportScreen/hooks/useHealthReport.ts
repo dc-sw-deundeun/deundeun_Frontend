@@ -49,9 +49,23 @@ export const useHealthReport = (recordId: number | undefined, onDeleted: () => v
   };
 
   const handleVerify = async () => {
-    if (!recordId) return;
+    if (!recordId || !recordData) return;
     try {
-      const res = await recordsApi.analyzeCheckup(recordId);
+      const analysisMetrics = recordData.metrics.map(m => ({
+        metric_code: m.metric_code,
+        metric_name: m.metric_name,
+        value: String(m.value || ''),
+        unit: m.unit || '',
+        raw_text: String(m.value || ''),
+      }));
+      
+      const res = await recordsApi.analyzeCheckup({
+        record_id: recordId,
+        sex: 'male',
+        measured_at: new Date().toISOString().split('T')[0],
+        metrics: analysisMetrics,
+      });
+      
       if (res.success) {
         setVerificationStatus('VERIFIED');
         Alert.alert('저장 완료', '사용자 확인이 완료되어 검진 기록이 저장되었습니다.');
