@@ -3,8 +3,8 @@ import { View, TextInput, TouchableOpacity, ActivityIndicator } from 'react-nati
 import Text from '@/components/Text';
 import { COLORS, SPACING } from '@/constants/theme';
 import { CheckCircle2 } from 'lucide-react-native';
-import { styles } from '../LoginScreen.styles';
-import { formatForgotTime } from '../utils';
+import { styles } from '../../LoginScreen/LoginScreen.styles';
+import { formatForgotTime } from '../../LoginScreen/utils';
 
 interface ForgotResetStepProps {
   forgotEmail: string;
