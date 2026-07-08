@@ -6,19 +6,21 @@ import { User, Lock, Link, ChevronRight } from 'lucide-react-native';
 import { styles } from '../MyPageScreen.styles';
 
 interface AccountMenuCardProps {
+  onMyInfo: () => void;
   onChangePassword: () => void;
   onConnectedApps: () => void;
   theme: { text: string; textMuted: string; border: string };
 }
 
 export const AccountMenuCard: React.FC<AccountMenuCardProps> = ({
+  onMyInfo,
   onChangePassword,
   onConnectedApps,
   theme,
 }) => {
   return (
     <Card style={styles.menuList} padding={0}>
-      <TouchableOpacity style={styles.menuItem}>
+      <TouchableOpacity style={styles.menuItem} onPress={onMyInfo}>
         <View style={styles.menuItemLeft}>
           <User size={18} color={theme.text} />
           <Text style={[styles.menuItemText, { color: theme.text }]}>내 정보</Text>

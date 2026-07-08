@@ -52,7 +52,6 @@ export default function MyPageScreen({ navigation }: MyPageScreenProps) {
           <Card 
             style={styles.profileCard} 
             radius={24}
-            onPress={() => navigation.navigate('EditProfile', { nickname, email })}
           >
             <View style={[styles.avatarCircle, { backgroundColor: COLORS.primaryLight }]}>
               <Text style={{ fontSize: 32 }}>🥬</Text>
@@ -67,6 +66,7 @@ export default function MyPageScreen({ navigation }: MyPageScreenProps) {
           <View style={styles.menuGroup}>
             <Text style={[styles.groupTitle, { color: theme.textMuted }]}>계정 및 보안</Text>
             <AccountMenuCard
+              onMyInfo={() => navigation.navigate('EditProfile', { nickname, email })}
               onChangePassword={() => navigation.navigate('ChangePassword')}
               onConnectedApps={() => navigation.navigate('ConnectedApps')}
               theme={theme}
