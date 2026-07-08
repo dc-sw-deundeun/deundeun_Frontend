@@ -73,10 +73,13 @@ export default function CheckupResultScreen({ route, navigation }: RootStackScre
           },
         ],
       });
-    } catch (error) {
+    } catch (error: any) {
       setIsLoading(false);
       Alert.alert('오류', '데이터 저장에 실패했습니다.');
       console.error('Commit Checkup Error:', error);
+      if (error.response?.data) {
+        console.error('👉 서버 응답 전체 상세(Error Details):', JSON.stringify(error.response.data, null, 2));
+      }
     }
   };
 
