@@ -65,7 +65,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             {description}
           </Text>
           <View style={styles.modalActions}>
-            {!hideCancel && (
+            {!hideCancel && onCancel && (
               <TouchableOpacity
                 style={[styles.modalBtn, styles.cancelBtn, { borderColor: theme.border }]}
                 onPress={onCancel}
