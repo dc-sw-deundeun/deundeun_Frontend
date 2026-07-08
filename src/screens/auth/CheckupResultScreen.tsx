@@ -58,13 +58,25 @@ export default function CheckupResultScreen({ route, navigation }: RootStackScre
 
       if (recordId) {
         // 3단계: 검진 결과 분석 및 기록 최종 저장 (Analyses)
-        await recordsApi.analyzeCheckup(recordId);
+        const analysisMetrics = metrics.map(m => ({
+          metric_code: m.metric_code,
+          metric_name: m.metric_name,
+          value: String(m.value),
+          unit: m.unit || '',
+          raw_text: String(m.value), // OCR raw_text fallback
+        }));
+        
+        await recordsApi.analyzeCheckup({
+          record_id: recordId,
+          sex: 'male', // 기본값 (추후 연동 필요)
+          measured_at: new Date().toISOString().split('T')[0], // 오늘 날짜 기본값
+          metrics: analysisMetrics,
+        });
       } else {
         console.warn('record_id가 없습니다. 분석 단계를 건너뜁니다.');
       }
 
-      // 4단계: 온보딩 최종 완료 처리
-      await onboardingApi.completeOnboarding();
+      // (제거됨: onboardingApi.completeOnboarding() - 온보딩은 별도 처리)
 
       setIsLoading(false);
       navigation.reset({

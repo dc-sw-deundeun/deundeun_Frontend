@@ -20,6 +20,19 @@ export interface CommitCheckupRequest {
   metrics: any[];
 }
 
+export interface AnalyzeCheckupRequest {
+  record_id?: number;
+  sex: string;
+  measured_at: string;
+  metrics: {
+    metric_code: string;
+    metric_name: string;
+    value: string;
+    unit: string;
+    raw_text: string;
+  }[];
+}
+
 export interface MetricResponse {
   metric_id: number;
   metric_code: string;
@@ -49,10 +62,8 @@ export const recordsApi = {
   },
 
   // 검진 결과 분석 및 기록 최종 저장 (Analyses)
-  analyzeCheckup: async (recordId: number): Promise<ApiResponse<any>> => {
-    const response = await apiClient.post<ApiResponse<any>>(`/health-metrics/analyses`, {
-      record_id: recordId
-    });
+  analyzeCheckup: async (data: AnalyzeCheckupRequest): Promise<ApiResponse<any>> => {
+    const response = await apiClient.post<ApiResponse<any>>(`/health-metrics/analyses`, data);
     return response.data;
   },
 
