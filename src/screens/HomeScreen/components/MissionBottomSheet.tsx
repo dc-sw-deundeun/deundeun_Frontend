@@ -54,7 +54,7 @@ export const MissionBottomSheet: React.FC<MissionBottomSheetProps> = ({
           styles.missionScroll,
           {
             opacity: sheetY.interpolate({
-              inputRange: [0, 270, 560, 600],
+              inputRange: [0, 270, 350, 460],
               outputRange: [1, 1, 0, 0],
               extrapolate: 'clamp',
             })
