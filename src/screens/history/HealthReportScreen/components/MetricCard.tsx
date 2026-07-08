@@ -2,89 +2,103 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import Text from '@/components/Text';
 import Card from '@/components/Card';
-import { COLORS, SPACING } from '@/constants/theme';
-import { getMetricRangeConfig } from '@/screens/history/MetricDetailScreen/constants';
-import { mapStatusToKorean, getStatusColor } from '../utils';
+import { SPACING } from '@/constants/theme';
+import { AnalysisMetricCard } from '@/api';
+import { mapStatusToKorean, getStatusColor, segmentColorToHex } from '../utils';
+import { getFallbackRangeBar } from '../fallbackRanges';
 
 interface MetricCardProps {
-  metricName: string;
-  metricCode: string;
-  value: string;
-  unit: string | null;
-  status: string;
+  card: AnalysisMetricCard;
   onPress: () => void;
   theme: { text: string; textMuted: string; card: string; border: string };
-  // systolic value for BP representation
-  systolicValue?: number;
 }
 
-export const MetricCard: React.FC<MetricCardProps> = ({
-  metricName,
-  metricCode,
-  value,
-  unit,
-  status,
-  onPress,
-  theme,
-  systolicValue,
-}) => {
-  const statusKorean = mapStatusToKorean(status);
-  const badgeColor = getStatusColor(statusKorean);
-
-  // Determine value to use for positioning the slider pin
-  let numValue = parseFloat(value) || 0;
-  if (metricCode === 'BloodPressure' && systolicValue) {
-    numValue = systolicValue;
-  }
-
-  // Range config for slider positioning
-  // If it's BloodPressure, use SystolicBP config
-  const configCode = metricCode === 'BloodPressure' ? 'SystolicBP' : metricCode;
-  const config = getMetricRangeConfig(configCode);
-
-  const showSlider = metricCode !== 'BMI';
-
-  // Calculate pin position percentage
-  const positionPercentage = Math.min(
-    Math.max(((numValue - config.minVal) / (config.maxVal - config.minVal)) * 100, 2),
-    98
-  );
+export const MetricCard: React.FC<MetricCardProps> = ({ card, onPress, theme }) => {
+  const badgeColor = getStatusColor(mapStatusToKorean(card.status));
+  const numericValue = typeof card.value === 'number' ? card.value : parseFloat(String(card.value ?? ''));
+  const rangeBar = card.range_bar ?? getFallbackRangeBar(card.code, numericValue);
 
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
       <Card style={styles.card} padding={SPACING.md} radius={20}>
         <View style={styles.headerRow}>
-          <Text style={[styles.title, { color: theme.text }]}>{metricName}</Text>
+          <Text style={[styles.title, { color: theme.text }]}>{card.label}</Text>
           <View style={styles.valueBadgeRow}>
             <Text style={styles.valueText}>
-              {value}
-              <Text style={[styles.unitText, { color: theme.textMuted }]}> {unit ?? ''}</Text>
+              {card.value_text}
             </Text>
             <View style={[styles.badge, { backgroundColor: badgeColor + '15' }]}>
-              <Text style={[styles.badgeText, { color: badgeColor }]}>{statusKorean}</Text>
+              <Text style={[styles.badgeText, { color: badgeColor }]}>{card.status_label}</Text>
             </View>
           </View>
         </View>
 
-        {showSlider && (
+        {rangeBar ? (
+          // 검진 결과 상세 그래프: 서버가 계산한 구간(segments)과 백분위(marker_percent)를 그대로 사용
           <View style={styles.sliderContainer}>
             <View style={styles.sliderBar}>
-              <View
-                style={[
-                  styles.barSegment,
-                  { backgroundColor: COLORS.success, borderTopLeftRadius: 4, borderBottomLeftRadius: 4 },
-                ]}
-              />
-              <View style={[styles.barSegment, { backgroundColor: COLORS.warning }]} />
-              <View
-                style={[
-                  styles.barSegment,
-                  { backgroundColor: COLORS.error, borderTopRightRadius: 4, borderBottomRightRadius: 4 },
-                ]}
-              />
+              {rangeBar.segments.map((seg, idx) => {
+                const widthPercent = ((seg.to_value - seg.from_value) / (rangeBar.max - rangeBar.min)) * 100;
+                const isFirst = idx === 0;
+                const isLast = idx === rangeBar.segments.length - 1;
+                return (
+                  <View
+                    key={`${seg.label}-${idx}`}
+                    style={[
+                      styles.barSegment,
+                      {
+                        flex: undefined,
+                        width: `${Math.max(widthPercent, 0)}%`,
+                        backgroundColor: segmentColorToHex(seg.color),
+                        borderTopLeftRadius: isFirst ? 4 : 0,
+                        borderBottomLeftRadius: isFirst ? 4 : 0,
+                        borderTopRightRadius: isLast ? 4 : 0,
+                        borderBottomRightRadius: isLast ? 4 : 0,
+                      },
+                    ]}
+                  />
+                );
+              })}
             </View>
-            <View style={[styles.sliderDot, { left: `${positionPercentage}%`, borderColor: badgeColor }]} />
+            <View
+              style={[
+                styles.sliderDot,
+                {
+                  left: `${Math.min(Math.max(rangeBar.marker_percent, 2), 98)}%`,
+                  borderColor: segmentColorToHex(rangeBar.active_segment?.color) || badgeColor,
+                },
+              ]}
+            />
           </View>
+        ) : null}
+
+        {rangeBar ? (
+          // 구간별 실제 값 범위(API/기준치의 from_value~to_value)를 각 구간 위치에 맞춰 표시
+          <View style={styles.rangeLabelRow}>
+            {rangeBar.segments.map((seg, idx) => {
+              const widthPercent = ((seg.to_value - seg.from_value) / (rangeBar.max - rangeBar.min)) * 100;
+              const leftPercent = ((seg.from_value - rangeBar.min) / (rangeBar.max - rangeBar.min)) * 100;
+              return (
+                <Text
+                  key={`${seg.label}-label-${idx}`}
+                  numberOfLines={1}
+                  style={[
+                    styles.rangeLabelText,
+                    { left: `${leftPercent}%`, width: `${widthPercent}%`, color: theme.textMuted },
+                  ]}
+                >
+                  {seg.label}
+                </Text>
+              );
+            })}
+          </View>
+        ) : (
+          // 그래프용 구간 정보가 없는 지표(정상/비정상 판정만 존재): 배지 + 안내 텍스트로 대체
+          card.badge_text && card.badge_text !== card.status_label ? (
+            <View style={[styles.noGraphNote, { backgroundColor: badgeColor + '10' }]}>
+              <Text style={[styles.noGraphNoteText, { color: badgeColor }]}>{card.badge_text}</Text>
+            </View>
+          ) : null
         )}
       </Card>
     </TouchableOpacity>
@@ -115,10 +129,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#6A5438',
   },
-  unitText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -138,9 +148,9 @@ const styles = StyleSheet.create({
     height: 8,
     flexDirection: 'row',
     borderRadius: 4,
+    overflow: 'hidden',
   },
   barSegment: {
-    flex: 1,
     height: '100%',
   },
   sliderDot: {
@@ -155,6 +165,28 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 2,
     shadowOffset: { width: 0, height: 1 },
+  },
+  rangeLabelRow: {
+    height: 14,
+    position: 'relative',
+    marginTop: 2,
+  },
+  rangeLabelText: {
+    position: 'absolute',
+    fontSize: 9,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  noGraphNote: {
+    marginTop: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  noGraphNoteText: {
+    fontSize: 12,
+    fontWeight: '600',
+    lineHeight: 16,
   },
 });
 

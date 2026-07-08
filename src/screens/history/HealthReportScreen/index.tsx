@@ -10,8 +10,9 @@ import { RootStackScreenProps } from '@/types/navigation';
 import { styles } from './HealthReportScreen.styles';
 import { SummaryCard } from './components/SummaryCard';
 import { MetricCard } from './components/MetricCard';
+import { PlainMetricRow } from './components/PlainMetricRow';
 import { useHealthReport } from './hooks/useHealthReport';
-import { mapStatusToKorean } from './utils';
+import { AnalysisMetricCard } from '@/api';
 
 export default function HealthReportScreen({ navigation, route }: RootStackScreenProps<'HealthReport'>) {
   const { isDarkMode } = useAppStore();
@@ -23,10 +24,13 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
 
   const {
     isLoading,
-    metrics,
     dateStr,
     verificationStatus,
     summaryText,
+    analysisCards,
+    overallTitle,
+    overallCounts,
+    plainMetrics,
     handleVerify,
     deleteCheckupRecord,
   } = useHealthReport(recordId, () => navigation.goBack());
@@ -46,49 +50,39 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
     }
   };
 
-  const cautionCount = metrics.filter(m => {
-    const ko = mapStatusToKorean(m.status);
-    return ko === '주의' || ko === '경계';
-  }).length;
+  // Group analysis cards to combine BP_SYS and BP_DIA into a virtual 'BloodPressure' card
+  const groupedCards = React.useMemo(() => {
+    const list: AnalysisMetricCard[] = [];
+    const systolic = analysisCards.find(c => c.code === 'BP_SYS');
+    const diastolic = analysisCards.find(c => c.code === 'BP_DIA');
 
-  const normalCount = metrics.filter(m => {
-    const ko = mapStatusToKorean(m.status);
-    return ko === '정상';
-  }).length;
-
-  // Group metrics to combine SystolicBP and DiastolicBP into a virtual 'BloodPressure' metric
-  const groupedMetrics = React.useMemo(() => {
-    const list: any[] = [];
-    const systolic = metrics.find(m => m.metric_code === 'SystolicBP');
-    const diastolic = metrics.find(m => m.metric_code === 'DiastolicBP');
-
-    // Process combined Blood Pressure
     if (systolic || diastolic) {
-      const bpVal = `${systolic?.value ?? '-'}/${diastolic?.value ?? '-'}`;
-      const bpStatus = (systolic?.status === 'DANGER' || diastolic?.status === 'DANGER')
-        ? 'DANGER'
-        : (systolic?.status === 'WARNING' || diastolic?.status === 'WARNING' || systolic?.status === 'CAUTION' || diastolic?.status === 'CAUTION')
-          ? 'WARNING'
-          : 'NORMAL';
+      const worst = [systolic, diastolic].reduce((acc, c) => {
+        if (!c) return acc;
+        const rank = (s?: string) => (s === 'risk' ? 2 : s === 'caution' ? 1 : 0);
+        return !acc || rank(c.status) > rank(acc.status) ? c : acc;
+      }, undefined as AnalysisMetricCard | undefined)!;
 
       list.push({
-        metric_code: 'BloodPressure',
-        metric_name: '혈압',
-        value: bpVal,
+        code: 'BloodPressure',
+        label: '혈압',
+        value: systolic?.value ?? diastolic?.value ?? null,
         unit: 'mmHg',
-        status: bpStatus,
-        systolicValue: systolic ? parseFloat(systolic.value || '0') : undefined,
+        status: worst.status,
+        status_label: worst.status_label,
+        value_text: `${systolic?.value ?? '-'}/${diastolic?.value ?? '-'} mmHg`,
+        badge_text: worst.badge_text,
+        range_bar: systolic?.range_bar ?? diastolic?.range_bar ?? null,
       });
     }
 
-    // Process other metrics (excluding BP sub-metrics)
-    metrics.forEach(m => {
-      if (m.metric_code === 'SystolicBP' || m.metric_code === 'DiastolicBP') return;
-      list.push(m);
+    analysisCards.forEach(c => {
+      if (c.code === 'BP_SYS' || c.code === 'BP_DIA') return;
+      list.push(c);
     });
 
     return list;
-  }, [metrics]);
+  }, [analysisCards]);
 
   if (isLoading) {
     return (
@@ -118,52 +112,65 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Comprehensive Health State */}
         <SummaryCard
-          cautionCount={cautionCount}
-          normalCount={normalCount}
+          overallTitle={overallTitle}
+          normalCount={overallCounts.normal}
+          cautionCount={overallCounts.caution}
+          riskCount={overallCounts.risk}
           dateStr={dateStr}
           theme={theme}
           summaryText={summaryText}
         />
 
-        {/* List of Metric Cards */}
-        {groupedMetrics.map((item) => {
+        {/* List of Metric Cards (검진 결과 상세 - 백분위 그래프 / 정상·비정상 전용 UI) */}
+        {groupedCards.map((card) => {
           const handleSelectMetric = () => {
-            if (item.metric_code === 'BloodPressure') {
-              const systolic = metrics.find(m => m.metric_code === 'SystolicBP');
+            if (card.code === 'BloodPressure') {
+              const systolic = analysisCards.find(c => c.code === 'BP_SYS');
               if (systolic) {
                 navigation.navigate('MetricDetail', {
                   recordId: recordId!,
-                  metricCode: 'SystolicBP',
+                  metricCode: 'BP_SYS',
                   metricName: '혈압',
-                  value: systolic.value ?? '-',
+                  value: String(systolic.value ?? '-'),
                   unit: 'mmHg',
                 });
               }
             } else {
               navigation.navigate('MetricDetail', {
                 recordId: recordId!,
-                metricCode: item.metric_code,
-                metricName: item.metric_name,
-                value: item.value ?? '-',
-                unit: item.unit,
+                metricCode: card.code,
+                metricName: card.label,
+                value: String(card.value ?? '-'),
+                unit: card.unit,
               });
             }
           };
 
           return (
             <MetricCard
-              key={item.metric_code}
-              metricName={item.metric_name}
-              metricCode={item.metric_code}
-              value={item.value ?? '-'}
-              unit={item.unit}
-              status={item.status}
+              key={card.code}
+              card={card}
               onPress={handleSelectMetric}
               theme={theme}
-              systolicValue={item.systolicValue}
             />
           );
         })}
+
+        {/* 신장/성별 등 정상·비정상 판정이 없는 기본 정보 - 그래프 없이 값만 표시 */}
+        {plainMetrics.length > 0 && (
+          <View style={{ backgroundColor: theme.card, borderRadius: 20, overflow: 'hidden' }}>
+            {plainMetrics.map((m, idx) => (
+              <PlainMetricRow
+                key={m.metric_code}
+                label={m.metric_name}
+                value={m.value ?? '-'}
+                unit={m.unit}
+                theme={theme}
+                isLast={idx === plainMetrics.length - 1}
+              />
+            ))}
+          </View>
+        )}
 
         {/* Verification Action Button */}
         {verificationStatus !== 'VERIFIED' && recordId && (

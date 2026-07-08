@@ -62,6 +62,7 @@ export const styles = StyleSheet.create({
     height: 8,
     flexDirection: 'row',
     borderRadius: 4,
+    overflow: 'hidden',
   },
   barSegment: {
     flex: 1,

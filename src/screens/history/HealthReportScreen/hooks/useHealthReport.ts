@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Alert } from 'react-native';
-import { recordsApi, MetricResponse } from '@/api';
+import { recordsApi, MetricResponse, AnalysisMetricCard } from '@/api';
 import { useAppStore } from '@/store/useAppStore';
 
 // 검진 결과 상세 보고서의 데이터 조회 및 액션(검수/삭제/미션추가)을 담당하는 훅
@@ -11,6 +10,11 @@ export const useHealthReport = (recordId: number | undefined, onDeleted: () => v
   const [verificationStatus, setVerificationStatus] = useState('UNVERIFIED');
   const [addedMissions, setAddedMissions] = useState<string[]>([]);
   const [summaryText, setSummaryText] = useState('');
+  const [analysisCards, setAnalysisCards] = useState<AnalysisMetricCard[]>([]);
+  const [overallTitle, setOverallTitle] = useState('');
+  const [overallCounts, setOverallCounts] = useState({ normal: 0, caution: 0, risk: 0, unknown: 0 });
+  // 분석 결과(canonical_test_code)로 판정되지 않아 그래프/배지 없이 값만 보여줘야 하는 원본 항목 (예: 신장, 성별)
+  const [plainMetrics, setPlainMetrics] = useState<MetricResponse[]>([]);
 
   useEffect(() => {
     if (recordId) {
@@ -22,24 +26,36 @@ export const useHealthReport = (recordId: number | undefined, onDeleted: () => v
 
   const loadRecordDetail = async () => {
     setIsLoading(true);
+    let rawMetrics: MetricResponse[] = [];
     try {
       const res = await recordsApi.getCheckup(recordId!);
       if (res.success && res.data) {
-        setMetrics(res.data.metrics || []);
+        rawMetrics = res.data.metrics || [];
+        setMetrics(rawMetrics);
         setDateStr(res.data.measured_at || res.data.created_at || '');
         setVerificationStatus(res.data.verification_status || 'UNVERIFIED');
       }
 
-      // Fetch the analysis summary to display under the comprehensive opinion card
+      // 응답값(ui.summary) 기반으로 카드 목록/종합 소견을 구성
       try {
         const analysisRes = await recordsApi.getCheckupAnalysis(recordId!);
         if (analysisRes.success && analysisRes.data) {
-          const analysisData = analysisRes.data.analysis || analysisRes.data || {};
-          const explSummary = analysisData.explanation?.summary || analysisData.ui?.summary?.overall?.summary || '';
-          setSummaryText(explSummary);
+          const analysisData = analysisRes.data;
+          const summary = analysisData.ui?.summary;
+          setSummaryText(analysisData.explanation?.summary || summary?.overall?.summary || '');
+          setAnalysisCards(summary?.cards || []);
+          setOverallTitle(summary?.overall?.title || '');
+          setOverallCounts(summary?.overall?.counts || { normal: 0, caution: 0, risk: 0, unknown: 0 });
+
+          // 분석 결과에 포함되지 않은 원본 항목(신장/성별 등)만 그래프 없는 일반 값으로 남김
+          const classifiedInputLabels = new Set((analysisData.results || []).map((r: any) => r.input_label));
+          setPlainMetrics(rawMetrics.filter(m => !classifiedInputLabels.has(m.metric_name)));
+        } else {
+          setPlainMetrics(rawMetrics);
         }
       } catch (e) {
         console.warn('검진 결과 분석 로드 실패:', e);
+        setPlainMetrics(rawMetrics);
       }
     } catch (e) {
       console.warn('검진 결과 상세 로드 실패:', e);
@@ -106,6 +122,10 @@ export const useHealthReport = (recordId: number | undefined, onDeleted: () => v
     verificationStatus,
     addedMissions,
     summaryText,
+    analysisCards,
+    overallTitle,
+    overallCounts,
+    plainMetrics,
     handleVerify,
     deleteCheckupRecord,
     handleAddMission,
