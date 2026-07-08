@@ -87,7 +87,7 @@ export const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 380,
+    height: 650,
     borderTopLeftRadius: 36,
     borderTopRightRadius: 36,
     paddingHorizontal: 24,
@@ -125,7 +125,7 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
   },
   missionScroll: {
-    maxHeight: 280,
+    flex: 1,
   },
   missionRow: {
     backgroundColor: '#ffffff',

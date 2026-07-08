@@ -49,7 +49,19 @@ export const MissionBottomSheet: React.FC<MissionBottomSheetProps> = ({
       </View>
 
       {/* Mission Rows */}
-      <ScrollView style={styles.missionScroll} showsVerticalScrollIndicator={false}>
+      <Animated.ScrollView 
+        style={[
+          styles.missionScroll,
+          {
+            opacity: sheetY.interpolate({
+              inputRange: [0, 270, 560, 600],
+              outputRange: [1, 1, 0, 0],
+              extrapolate: 'clamp',
+            })
+          }
+        ]} 
+        showsVerticalScrollIndicator={false}
+      >
         {missions.map((mission) => (
           <TouchableOpacity
             key={mission.id}
@@ -97,7 +109,7 @@ export const MissionBottomSheet: React.FC<MissionBottomSheetProps> = ({
             </View>
           </TouchableOpacity>
         ))}
-      </ScrollView>
+      </Animated.ScrollView>
     </Animated.View>
   );
 };
