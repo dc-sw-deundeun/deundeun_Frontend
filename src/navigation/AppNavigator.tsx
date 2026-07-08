@@ -32,6 +32,7 @@ import EditResultsScreen from '@/screens/history/EditResultsScreen';
 import EditRecordScreen from '@/screens/history/EditRecordScreen';
 import SearchBrowseScreen from '@/screens/search/SearchBrowseScreen';
 import ChangePasswordScreen from '@/screens/mypage/ChangePasswordScreen';
+import EditProfileScreen from '@/screens/mypage/EditProfileScreen';
 import ConnectedAppsScreen from '@/screens/mypage/ConnectedAppsScreen';
 import NotificationsScreen from '@/screens/mypage/NotificationsScreen';
 import MetricDetailScreen from '@/screens/history/MetricDetailScreen';
@@ -346,6 +347,7 @@ export const AppNavigator = () => {
         <Stack.Screen name="MetricDetail" component={MetricDetailScreen} />
         <Stack.Screen name="SearchBrowse" component={SearchBrowseScreen} />
         <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+        <Stack.Screen name="EditProfile" component={EditProfileScreen} />
         <Stack.Screen name="ConnectedApps" component={ConnectedAppsScreen} />
         <Stack.Screen name="Notifications" component={NotificationsScreen} />
       </Stack.Navigator>
