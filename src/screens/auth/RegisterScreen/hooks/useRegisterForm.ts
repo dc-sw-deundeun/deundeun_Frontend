@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Alert } from 'react-native';
+import { useAppStore } from '@/store/useAppStore';
 import { authApi, setAccessToken } from '@/api';
 import { storage } from '@/utils/storage';
 import { RootStackScreenProps } from '@/types/navigation';
@@ -178,7 +179,7 @@ export const useRegisterForm = (navigation: RootStackScreenProps<'Register'>['na
         setEmailError(msg);
       } else {
         const errorMsg = error?.response?.data?.message || '회원가입 처리에 실패했습니다.';
-        Alert.alert('회원가입 실패', errorMsg);
+        useAppStore.getState().showAlert('회원가입 실패', errorMsg);
       }
     }
   };
