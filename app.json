@@ -4,7 +4,7 @@
     "slug": "deundeun",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "src/assets/splash_Icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true

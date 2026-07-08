@@ -92,16 +92,8 @@ export default function CheckupOcrScreen({ navigation }: RootStackScreenProps<'C
             scanLineAnim={scanLineAnim}
             onToggleCamera={toggleCamera}
             onTakePicture={handleTakePicture}
+            onPickImage={handlePickImage}
           />
-
-          {/* Upload Box */}
-          <TouchableOpacity
-            style={styles.uploadBox}
-            onPress={handlePickImage}
-          >
-            <Plus color="#ffffff" size={16} strokeWidth={2.5} />
-            <Text style={styles.uploadText}>클릭하여 이미지 업로드</Text>
-          </TouchableOpacity>
 
           {/* Uploaded List */}
           <UploadedImageList

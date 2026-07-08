@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, Platform } from 'react-native';
 import Text from '@/components/Text';
 import { RootStackScreenProps } from '@/types/navigation';
 import { COLORS } from '@/constants/theme';
@@ -64,31 +64,35 @@ export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'D
 
         {/* Sync Sources */}
         <View style={styles.syncList}>
-          <SyncSourceCard
-            icon={<Activity color="#2E7D32" size={24} />}
-            iconBg="#E8F5E9"
-            title="삼성 헬스"
-            subtitle="걸음 · 수면 · 심박수 연동"
-            isConnectingThis={connectingApp === 'Samsung'}
-            isAnyConnecting={connectingApp !== null}
-            isSynced={syncedApps.includes('Samsung')}
-            isAnySynced={isAnySynced}
-            onPress={() => handleSync('Samsung')}
-            theme={theme}
-          />
+          {Platform.OS === 'android' && (
+            <SyncSourceCard
+              icon={<Activity color="#2E7D32" size={24} />}
+              iconBg="#E8F5E9"
+              title="삼성 헬스"
+              subtitle="걸음 · 수면 · 심박수 연동"
+              isConnectingThis={connectingApp === 'Samsung'}
+              isAnyConnecting={connectingApp !== null}
+              isSynced={syncedApps.includes('Samsung')}
+              isAnySynced={isAnySynced}
+              onPress={() => handleSync('Samsung')}
+              theme={theme}
+            />
+          )}
 
-          <SyncSourceCard
-            icon={<Smartphone color="#C62828" size={24} />}
-            iconBg="#FFEBEE"
-            title="애플 건강"
-            subtitle="활동 · 심전도 · 영양 연동"
-            isConnectingThis={connectingApp === 'Apple'}
-            isAnyConnecting={connectingApp !== null}
-            isSynced={syncedApps.includes('Apple')}
-            isAnySynced={isAnySynced}
-            onPress={() => handleSync('Apple')}
-            theme={theme}
-          />
+          {Platform.OS === 'ios' && (
+            <SyncSourceCard
+              icon={<Smartphone color="#C62828" size={24} />}
+              iconBg="#FFEBEE"
+              title="애플 건강"
+              subtitle="활동 · 심전도 · 영양 연동"
+              isConnectingThis={connectingApp === 'Apple'}
+              isAnyConnecting={connectingApp !== null}
+              isSynced={syncedApps.includes('Apple')}
+              isAnySynced={isAnySynced}
+              onPress={() => handleSync('Apple')}
+              theme={theme}
+            />
+          )}
 
           <SyncSourceCard
             icon={<ShieldCheck color="#1565C0" size={24} />}

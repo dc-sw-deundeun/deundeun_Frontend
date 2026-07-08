@@ -46,6 +46,10 @@ export type RootStackParamList = {
   };
   SearchBrowse: undefined;
   ChangePassword: undefined;
+  EditProfile: {
+    nickname: string;
+    email: string;
+  };
   ConnectedApps: undefined;
   Notifications: undefined;
 };

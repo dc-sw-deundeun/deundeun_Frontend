@@ -26,6 +26,11 @@ export interface NotificationSettingsUpdateRequest {
   push_alarm_enabled?: boolean | null;
 }
 
+// 3. 프로필 관련 타입
+export interface ProfileUpdateRequest {
+  nickname: string;
+}
+
 export const myApi = {
   // 연동 앱 목록 조회
   getConnectedApps: async (): Promise<ApiResponse<ConnectedAppsResponse>> => {
@@ -59,6 +64,12 @@ export const myApi = {
   // 회원 탈퇴
   deleteAccount: async (): Promise<ApiResponse<void>> => {
     const response = await apiClient.delete<ApiResponse<void>>('/my/account');
+    return response.data;
+  },
+
+  // 프로필(닉네임) 수정
+  updateProfile: async (data: ProfileUpdateRequest): Promise<ApiResponse<void>> => {
+    const response = await apiClient.patch<ApiResponse<void>>('/my/profile', data);
     return response.data;
   },
 };

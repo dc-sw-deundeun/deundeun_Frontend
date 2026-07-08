@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { authApi, myApi } from '@/api';
 
 // 프로필 정보 및 알림 설정 조회/토글을 담당하는 훅
@@ -11,34 +12,36 @@ export const useMyPageSettings = () => {
   const [weeklyReport, setWeeklyReport] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUserDataAndSettings = async () => {
-      try {
-        setLoading(true);
-        // 사용자 정보 조회
-        const userRes = await authApi.getMe();
-        if (userRes.success && userRes.data) {
-          setNickname(userRes.data.nickname || '사용자');
-          setEmail(userRes.data.email || '');
-        }
+  useFocusEffect(
+    useCallback(() => {
+      const fetchUserDataAndSettings = async () => {
+        try {
+          setLoading(true);
+          // 사용자 정보 조회
+          const userRes = await authApi.getMe();
+          if (userRes.success && userRes.data) {
+            setNickname(userRes.data.nickname || '사용자');
+            setEmail(userRes.data.email || '');
+          }
 
-        // 알림 설정 조회
-        const settingsRes = await myApi.getNotificationSettings();
-        if (settingsRes.success && settingsRes.data) {
-          setDietAlert(settingsRes.data.email_alarm_enabled);
-          setMissionAlert(settingsRes.data.mission_alarm_enabled);
-          setRecordAlert(settingsRes.data.record_alarm_enabled);
-          setWeeklyReport(settingsRes.data.push_alarm_enabled);
+          // 알림 설정 조회
+          const settingsRes = await myApi.getNotificationSettings();
+          if (settingsRes.success && settingsRes.data) {
+            setDietAlert(settingsRes.data.email_alarm_enabled);
+            setMissionAlert(settingsRes.data.mission_alarm_enabled);
+            setRecordAlert(settingsRes.data.record_alarm_enabled);
+            setWeeklyReport(settingsRes.data.push_alarm_enabled);
+          }
+        } catch (error) {
+          console.error('[MyPageScreen] 데이터 로드 실패:', error);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error('[MyPageScreen] 데이터 로드 실패:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
-    fetchUserDataAndSettings();
-  }, []);
+      fetchUserDataAndSettings();
+    }, [])
+  );
 
   const handleToggleDietAlert = async (value: boolean) => {
     setDietAlert(value);
