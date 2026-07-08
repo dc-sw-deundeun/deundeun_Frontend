@@ -54,7 +54,11 @@ export default function MyPageScreen({ navigation }: MyPageScreenProps) {
         <ScreenHeader title="마이페이지" variant="section" />
         <View style={styles.scrollContent}>
           {/* Profile Card */}
-          <Card style={styles.profileCard} radius={24}>
+          <Card 
+            style={styles.profileCard} 
+            radius={24}
+            onPress={() => navigation.navigate('EditProfile', { nickname, email })}
+          >
             <View style={[styles.avatarCircle, { backgroundColor: COLORS.primaryLight }]}>
               <Text style={{ fontSize: 32 }}>🥬</Text>
             </View>
