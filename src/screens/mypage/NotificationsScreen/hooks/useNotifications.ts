@@ -11,12 +11,14 @@ export const useNotifications = () => {
       setLoading(true);
       const res = await notificationApi.getNotifications();
       if (res.success && res.data && res.data.items) {
-        // 백엔드 데이터에 기본적으로 is_read가 포함되어 있지 않을 수 있으므로 초기값 false 설정
-        const items = res.data.items.map((item) => ({
-          ...item,
-          is_read: item.is_read ?? false,
-        }));
-        setNotifications(items);
+        // 읽지 않은 알림만 화면에 표시되도록 필터링
+        const unreadItems = res.data.items
+          .filter((item) => !item.read_at && !item.is_read)
+          .map((item) => ({
+            ...item,
+            is_read: false,
+          }));
+        setNotifications(unreadItems);
       }
     } catch (error) {
       console.error('알림 목록 로딩 실패:', error);
@@ -32,10 +34,8 @@ export const useNotifications = () => {
   const handleMarkAsRead = async (id: number) => {
     try {
       await notificationApi.markNotificationRead(id);
-      // 로컬 상태 즉시 업데이트
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
-      );
+      // 읽음 처리된 알림은 목록에서 즉시 제거 (안 보이도록 처리)
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
     } catch (error) {
       console.error('알림 읽음 처리 실패:', error);
     }
