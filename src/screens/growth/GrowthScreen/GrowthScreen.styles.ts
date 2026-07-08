@@ -85,21 +85,21 @@ export const styles = StyleSheet.create({
     aspectRatio: 0.72,
     borderRadius: 20,
     borderWidth: 1.5,
-    paddingVertical: 12,
+    paddingVertical: 16,
     paddingHorizontal: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 35,
+    gap: 16,
   },
   imageContainer: {
-    width: 80,
-    height: 80,
+    width: 60,
+    height: 60,
     justifyContent: 'center',
     alignItems: 'center',
   },
   companionImage: {
-    width: 76,
-    height: 76,
+    width: 54,
+    height: 54,
     resizeMode: 'contain',
     ...Platform.select({
       web: {
