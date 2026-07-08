@@ -9,14 +9,11 @@ import { RootStackScreenProps } from '@/types/navigation';
 import { styles } from './SearchBrowseScreen.styles';
 import { POPULAR_SEARCHES } from './constants';
 import { DiseaseResultCard } from './components/DiseaseResultCard';
-import { ExplanationSheet } from './components/ExplanationSheet';
 import { useSearchDiseases } from './hooks/useSearchDiseases';
 
 export default function SearchBrowseScreen({ navigation }: RootStackScreenProps<'SearchBrowse'>) {
   const { isDarkMode, showAlert } = useAppStore();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
-
-  const [showExplanationSheet, setShowExplanationSheet] = useState(false);
 
   const {
     query,
@@ -25,8 +22,6 @@ export default function SearchBrowseScreen({ navigation }: RootStackScreenProps<
     setShowResult,
     loading,
     results,
-    selectedDisease,
-    setSelectedDisease,
     handleSearchSubmit,
     handlePopularSearch,
   } = useSearchDiseases();
@@ -90,10 +85,6 @@ export default function SearchBrowseScreen({ navigation }: RootStackScreenProps<
                   key={idx}
                   disease={disease}
                   onNavigateHealthReport={() => navigation.navigate('HealthReport')}
-                  onOpenExplanation={() => {
-                    setSelectedDisease(disease);
-                    setShowExplanationSheet(true);
-                  }}
                   theme={theme}
                 />
               ))
@@ -102,17 +93,6 @@ export default function SearchBrowseScreen({ navigation }: RootStackScreenProps<
         )}
       </ScrollView>
 
-      {/* Explanation Sheet (Interpretation Bottom Sheet Modal) */}
-      <ExplanationSheet
-        visible={showExplanationSheet && selectedDisease !== null}
-        disease={selectedDisease}
-        onClose={() => setShowExplanationSheet(false)}
-        onRequestMission={() => {
-          setShowExplanationSheet(false);
-          showAlert('미션 등록', '이 지표를 개선하기 위한 맞춤 추천 미션이 추가되었습니다!');
-        }}
-        theme={theme}
-      />
     </SafeAreaView>
   );
 }
