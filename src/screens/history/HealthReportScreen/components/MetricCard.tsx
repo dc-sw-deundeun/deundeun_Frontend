@@ -9,7 +9,7 @@ import { getFallbackRangeBar } from '../fallbackRanges';
 
 interface MetricCardProps {
   card: AnalysisMetricCard;
-  onPress: () => void;
+  onPress?: () => void;
   theme: { text: string; textMuted: string; card: string; border: string };
 }
 
@@ -19,7 +19,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({ card, onPress, theme }) 
   const rangeBar = card.range_bar ?? getFallbackRangeBar(card.code, numericValue);
 
   return (
-    <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
+    <TouchableOpacity activeOpacity={0.9} onPress={onPress} disabled={!onPress}>
       <Card style={styles.card} padding={SPACING.md} radius={20}>
         <View style={styles.headerRow}>
           <Text style={[styles.title, { color: theme.text }]}>{card.label}</Text>
@@ -27,9 +27,11 @@ export const MetricCard: React.FC<MetricCardProps> = ({ card, onPress, theme }) 
             <Text style={styles.valueText}>
               {card.value_text}
             </Text>
-            <View style={[styles.badge, { backgroundColor: badgeColor + '15' }]}>
-              <Text style={[styles.badgeText, { color: badgeColor }]}>{card.status_label}</Text>
-            </View>
+            {!!card.status_label && (
+              <View style={[styles.badge, { backgroundColor: badgeColor + '15' }]}>
+                <Text style={[styles.badgeText, { color: badgeColor }]}>{card.status_label}</Text>
+              </View>
+            )}
           </View>
         </View>
 

@@ -70,7 +70,13 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
         unit: 'mmHg',
         status: worst.status,
         status_label: worst.status_label,
-        value_text: `${systolic?.value ?? '-'}/${diastolic?.value ?? '-'} mmHg`,
+        value_text: (systolic?.value != null && diastolic?.value != null)
+          ? `${systolic.value}/${diastolic.value} mmHg`
+          : systolic?.value != null
+            ? `${systolic.value} mmHg (수축기)`
+            : diastolic?.value != null
+              ? `${diastolic.value} mmHg (이완기)`
+              : '- mmHg',
         badge_text: worst.badge_text,
         range_bar: systolic?.range_bar ?? diastolic?.range_bar ?? null,
       });
@@ -121,6 +127,22 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
           summaryText={summaryText}
         />
 
+        {/* 신장/성별 등 정상·비정상 판정이 없는 기본 정보 - 그래프 없이 독립적인 카드로 표시 (맨 위로 이동) */}
+        {plainMetrics.map((m) => {
+          const card: AnalysisMetricCard = {
+            code: m.metric_code,
+            label: m.metric_name,
+            value: m.value ?? null,
+            unit: m.unit || '',
+            status: 'normal',
+            status_label: '', // 배지 숨김
+            value_text: `${m.value ?? '-'}${m.unit ? ` ${m.unit}` : ''}`,
+            badge_text: '',
+            range_bar: null,
+          };
+          return <MetricCard key={card.code} card={card} theme={theme} />;
+        })}
+
         {/* List of Metric Cards (검진 결과 상세 - 백분위 그래프 / 정상·비정상 전용 UI) */}
         {groupedCards.map((card) => {
           const handleSelectMetric = () => {
@@ -155,22 +177,6 @@ export default function HealthReportScreen({ navigation, route }: RootStackScree
             />
           );
         })}
-
-        {/* 신장/성별 등 정상·비정상 판정이 없는 기본 정보 - 그래프 없이 값만 표시 */}
-        {plainMetrics.length > 0 && (
-          <View style={{ backgroundColor: theme.card, borderRadius: 20, overflow: 'hidden' }}>
-            {plainMetrics.map((m, idx) => (
-              <PlainMetricRow
-                key={m.metric_code}
-                label={m.metric_name}
-                value={m.value ?? '-'}
-                unit={m.unit}
-                theme={theme}
-                isLast={idx === plainMetrics.length - 1}
-              />
-            ))}
-          </View>
-        )}
 
         {/* Verification Action Button */}
         {verificationStatus !== 'VERIFIED' && recordId && (
