@@ -30,9 +30,11 @@ export const RecordCard: React.FC<RecordCardProps> = ({ record, seq, onPress, th
         <ChevronRight size={18} color={theme.textMuted} />
       </View>
 
-      <Text style={[styles.hospitalText, { color: theme.textMuted }]}>
-        {record.source_type === 'OCR' ? 'OCR 분석 검진표' : '수동 입력 기록'}
-      </Text>
+      {record.source_type === 'OCR' && (
+        <Text style={[styles.hospitalText, { color: theme.textMuted }]}>
+          OCR 분석 검진표
+        </Text>
+      )}
 
       {/* Badges row */}
       <View style={styles.badgesRow}>
