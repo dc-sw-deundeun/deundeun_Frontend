@@ -5,41 +5,57 @@ import React from 'react';
 import { missionApi } from '@/api';
 import { DailyMission } from '../types';
 import { useAppStore } from '@/store/useAppStore';
+import { WeeklyStatisticsResponse, MissionSummaryResponse } from '@/api/mission';
 
 // 오늘의 미션 목록 조회 및 인증 처리를 담당하는 훅
 export const useTodayMissions = () => {
   const [missions, setMissions] = useState<DailyMission[]>([]);
-  const [streakDays] = useState(27);
+  const [weeklyStats, setWeeklyStats] = useState<WeeklyStatisticsResponse | null>(null);
+  const [summaryStats, setSummaryStats] = useState<MissionSummaryResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [isVerifyModalVisible, setIsVerifyModalVisible] = useState(false);
   const [activeMissionId, setActiveMissionId] = useState<number | null>(null);
 
-  const loadTodayMissions = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const res = await missionApi.getTodayMissions();
-      if (res.success && res.data) {
-        const mapped = res.data.items.map((item) => ({
+      const [todayRes, weeklyRes, summaryRes] = await Promise.all([
+        missionApi.getTodayMissions(),
+        missionApi.getWeeklyStatistics(),
+        missionApi.getMissionSummary(),
+      ]);
+
+      if (todayRes.success && todayRes.data) {
+        const mapped = todayRes.data.items.map((item) => ({
           id: item.mission_id,
           title: item.title,
           category: item.rationale || item.category || '오늘의 건강 실천',
           completed: item.status === 'COMPLETED',
           xp: item.xp_reward,
+          missionType: item.category || item.mission_type || 'activity',
         }));
         setMissions(mapped);
       }
+
+      if (weeklyRes.success && weeklyRes.data) {
+        setWeeklyStats(weeklyRes.data);
+      }
+
+      if (summaryRes.success && summaryRes.data) {
+        setSummaryStats(summaryRes.data);
+      }
     } catch (error) {
-      console.error('오늘의 미션 로드 실패:', error);
+      console.error('데이터 로드 실패:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // 포커스 시 실시간 미션 리스트 조회
+  // 포커스 시 실시간 데이터 조회
   useFocusEffect(
     React.useCallback(() => {
-      loadTodayMissions();
+      loadData();
     }, [])
   );
 
@@ -58,8 +74,8 @@ export const useTodayMissions = () => {
         setIsVerifyModalVisible(false);
         useAppStore.getState().showAlert('미션 인증 완료', '미션 인증이 완료되어 XP가 지급되었습니다!');
 
-        // 목록 다시 로드하여 완료 상태 업데이트
-        await loadTodayMissions();
+        // 데이터 다시 로드
+        await loadData();
       } catch (error) {
         console.error('미션 인증 실패:', error);
         useAppStore.getState().showAlert('오류', '미션 인증 처리 중 오류가 발생했습니다.');
@@ -75,7 +91,8 @@ export const useTodayMissions = () => {
 
   return {
     missions,
-    streakDays,
+    weeklyStats,
+    summaryStats,
     completedCount,
     isVerifyModalVisible,
     handleVerifyPress,

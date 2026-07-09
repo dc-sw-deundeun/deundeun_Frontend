@@ -3,7 +3,7 @@ export interface Mission {
   title: string;
   points: number;
   completed: boolean;
-  emoji: string;
+  missionType: string;
 }
 
 export interface AnimalCharacter {

@@ -49,20 +49,12 @@ export const useHomeData = (onNewUnlock: (newlyUnlocked: string[]) => void) => {
 
         // 오늘 미션 목록 매핑
         const mappedMissions = today_missions.items.map((item) => {
-          let emoji = '🌿';
-          if (item.template_code === 'DEFAULT_SELF_CHECK') {
-            emoji = '🩺';
-          } else if (item.category === 'FOOD' || item.category === 'DIET') {
-            emoji = '🥗';
-          } else if (item.category === 'EXERCISE' || item.category === 'ACTIVITY') {
-            emoji = '🏃';
-          }
           return {
             id: item.mission_id,
             title: item.title,
             points: item.xp_reward,
             completed: item.status === 'COMPLETED',
-            emoji,
+            missionType: item.category || item.mission_type || 'activity',
           };
         });
         setMissions(mappedMissions);

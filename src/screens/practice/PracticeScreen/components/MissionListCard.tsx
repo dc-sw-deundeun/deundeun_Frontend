@@ -4,6 +4,7 @@ import Text from '@/components/Text';
 import { Check } from 'lucide-react-native';
 import { styles } from '../PracticeScreen.styles';
 import { DailyMission } from '../types';
+import { getMissionIcon } from '@/utils/missionIcon';
 
 interface MissionListCardProps {
   missions: DailyMission[];
@@ -46,9 +47,7 @@ export const MissionListCard: React.FC<MissionListCardProps> = ({
               <View style={styles.missionCardContent}>
                 {/* Icon wrapper */}
                 <View style={[styles.missionIconContainer, { backgroundColor: lightAccent }]}>
-                  <Text style={{ fontSize: 18 }}>
-                    {mission.id === 1 ? '🚶' : '🥗'}
-                  </Text>
+                  {getMissionIcon(mission.missionType, theme.text, 24)}
                 </View>
 
                 {/* Text descriptions */}
