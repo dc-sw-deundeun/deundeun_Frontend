@@ -24,8 +24,16 @@ export const useHomeData = (onNewUnlock: (newlyUnlocked: string[]) => void) => {
   const [isLevelUpVisible, setIsLevelUpVisible] = useState(false);
   const [levelUpAnimal, setLevelUpAnimal] = useState<string>('곰');
 
-  // Garden container layout size to bound the frog drag
-  const [gardenLayout, setGardenLayout] = useState({ width: 0, height: 0 });
+  const [gardenLayout, setGardenLayoutState] = useState({ width: 0, height: 0 });
+
+  const setGardenLayout = React.useCallback((newLayout: { width: number; height: number }) => {
+    setGardenLayoutState(prev => {
+      if (prev.width === newLayout.width && prev.height === newLayout.height) {
+        return prev;
+      }
+      return newLayout;
+    });
+  }, []);
   const [loading, setLoading] = useState(true);
 
   // Store previously loaded animal codes to detect new unlocks (diff)

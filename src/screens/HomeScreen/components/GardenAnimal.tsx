@@ -4,12 +4,14 @@ import Text from '@/components/Text';
 import { styles } from '../HomeScreen.styles';
 import { GardenAnimalProps } from '../types';
 import { ANIMAL_ACTIVE_IMAGES, ANIMAL_INACTIVE_IMAGES, mapAnimalCodeToAssetKey } from '../constants';
+import { useIsFocused } from '@react-navigation/native';
 
 // 모든 정원 동물 캐릭터들을 동적으로 렌더링하고 랜덤하게 통통 움직이게 하는 컴포넌트
 export const GardenAnimal = ({ gardenLayout, initialX, initialY, animalCode }: GardenAnimalProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isBlinking, setIsBlinking] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const isFocused = useIsFocused();
 
   const pan = useRef(new Animated.ValueXY()).current;
   const currentPosition = useRef({ x: 0, y: 0 });
@@ -32,6 +34,8 @@ export const GardenAnimal = ({ gardenLayout, initialX, initialY, animalCode }: G
   }, [pan]);
 
   useEffect(() => {
+    if (!isFocused) return;
+
     const interval = setInterval(() => {
       setIsBlinking(true);
       const timeout = setTimeout(() => {
@@ -41,10 +45,12 @@ export const GardenAnimal = ({ gardenLayout, initialX, initialY, animalCode }: G
     }, 30000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isFocused]);
 
   // 통통 랜덤하게 움직이는 효과
   useEffect(() => {
+    if (!isFocused) return;
+
     let active = true;
 
     const startRandomMovement = () => {
@@ -87,7 +93,7 @@ export const GardenAnimal = ({ gardenLayout, initialX, initialY, animalCode }: G
       clearTimeout(startTimeout);
       pan.stopAnimation();
     };
-  }, [isDragging, gardenLayout]);
+  }, [isDragging, gardenLayout, isFocused]);
 
   const panResponder = useRef(
     PanResponder.create({
