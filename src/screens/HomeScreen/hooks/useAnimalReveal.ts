@@ -5,7 +5,7 @@ import { Animated } from 'react-native';
 export const useAnimalReveal = () => {
   // Unlock Modal Queue State
   const [unlockQueue, setUnlockQueue] = useState<string[]>([]);
-  const [currentRevealAnimal, setCurrentRevealAnimal] = useState<string | null>('penguin');
+  const [currentRevealAnimal, setCurrentRevealAnimal] = useState<string | null>('frog');
   const [revealStep, setRevealStep] = useState<'idle' | 'shaking' | 'revealed'>('idle');
 
   // Animation values for Reveal
