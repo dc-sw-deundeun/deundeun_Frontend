@@ -4,6 +4,7 @@ import Text from '@/components/Text';
 import { COLORS } from '@/constants/theme';
 import { styles } from '../HomeScreen.styles';
 import { ANIMAL_NAMES, getRevealImage } from '../constants';
+import { getMediaImageUrl } from '@/utils/imageUrl';
 
 interface AnimalRevealModalProps {
   currentRevealAnimal: string | null;
@@ -38,7 +39,7 @@ export const AnimalRevealModal: React.FC<AnimalRevealModalProps> = ({
           {revealStep !== 'revealed' ? (
             <Pressable onPress={onShakePress} style={styles.revealInteractArea}>
               <Animated.View style={[shakeStyle, styles.giftBoxWrapper]}>
-                <Image source={require('../../../assets/giftbox.png')} style={styles.giftBoxImage} />
+                <Image source={getMediaImageUrl('ui', 'giftbox')} style={styles.giftBoxImage} />
               </Animated.View>
               <Text style={styles.revealInteractText}>
                 {revealStep === 'shaking' ? '깨어나는 중...' : '선물이 도착했어요!\n톡! 눌러서 확인해보세요'}

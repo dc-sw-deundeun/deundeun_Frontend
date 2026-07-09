@@ -1,13 +1,15 @@
+import { getMediaImageUrl } from '../../../utils/imageUrl';
+
 // 동물 코드와 로컬 이미지 매핑 정의 (사용자 가이드 반영)
 export const ANIMAL_IMAGES: Record<string, any> = {
-  frog: require('../../../assets/animal/frog1.png'),
-  chick: require('../../../assets/animal/chick1.png'),
-  pan: require('../../../assets/animal/pan1.png'), // 펭귄
-  dog: require('../../../assets/animal/dog1.png'),
-  cat: require('../../../assets/animal/cat1.png'),
-  tig: require('../../../assets/animal/tig1.png'), // 호랑이
-  bear: require('../../../assets/animal/bear1.png'), // 판다
-  mon: require('../../../assets/animal/mon1.png'), // 원숭이
+  frog: getMediaImageUrl('animal', 'frog_1'),
+  chick: getMediaImageUrl('animal', 'chick_1'),
+  pan: getMediaImageUrl('animal', 'penguin_1'), // 펭귄
+  dog: getMediaImageUrl('animal', 'dog_1'),
+  cat: getMediaImageUrl('animal', 'cat_1'),
+  tig: getMediaImageUrl('animal', 'tiger_1'), // 호랑이
+  bear: getMediaImageUrl('animal', 'panda_1'), // 판다
+  mon: getMediaImageUrl('animal', 'monkey_1'), // 원숭이
 };
 
 // 백엔드 동물 코드를 로컬 이미지 매핑 키로 변환

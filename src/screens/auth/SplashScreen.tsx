@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppStore } from '@/store/useAppStore';
 import { storage } from '@/utils/storage';
 import { setAccessToken } from '@/api';
+import { getMediaImageUrl } from '@/utils/imageUrl';
 import { styles } from './SplashScreen.styles';
 
 export default function SplashScreen({ navigation }: RootStackScreenProps<'Splash'>) {
@@ -45,7 +46,7 @@ export default function SplashScreen({ navigation }: RootStackScreenProps<'Splas
         <View style={styles.logoContainer}>
           <View style={styles.characterContainer}>
             <Image
-              source={require('../../assets/splash_Icon.png')}
+              source={getMediaImageUrl('ui', 'splash_icon')}
               style={styles.logoImage}
             />
           </View>
