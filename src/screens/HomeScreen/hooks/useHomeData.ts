@@ -20,10 +20,6 @@ export const useHomeData = (onNewUnlock: (newlyUnlocked: string[]) => void) => {
   // Floating animal characters positioning
   const [characters, setCharacters] = useState<AnimalCharacter[]>([]);
 
-  // Verification Modal states
-  const [isVerifyModalVisible, setIsVerifyModalVisible] = useState(false);
-  const [activeMissionId, setActiveMissionId] = useState<number | null>(null);
-
   // Level Up Modal states
   const [isLevelUpVisible, setIsLevelUpVisible] = useState(false);
   const [levelUpAnimal, setLevelUpAnimal] = useState<string>('곰');
@@ -39,25 +35,31 @@ export const useHomeData = (onNewUnlock: (newlyUnlocked: string[]) => void) => {
   const loadHomeData = async () => {
     try {
       setLoading(true);
-      const res = await homeApi.getHome();
+      const [res, todayRes] = await Promise.all([
+        homeApi.getHome(),
+        missionApi.getTodayMissions()
+      ]);
+
       if (res.success && res.data) {
-        const { character, today_missions } = res.data;
+        const { character } = res.data;
 
         // 경험치 및 레벨 설정 (current_level_exp를 나뭇잎 옆 포인트 값으로 매핑)
         setTotalPoints(character.current_level_exp);
         setUserLevel(character.level);
 
-        // 오늘 미션 목록 매핑
-        const mappedMissions = today_missions.items.map((item) => {
-          return {
-            id: item.mission_id,
-            title: item.title,
-            points: item.xp_reward,
-            completed: item.status === 'COMPLETED',
-            missionType: item.category || item.mission_type || 'activity',
-          };
-        });
-        setMissions(mappedMissions);
+        // 오늘 미션 목록 매핑 (missionApi.getTodayMissions() 사용)
+        if (todayRes.success && todayRes.data) {
+          const mappedMissions = todayRes.data.items.map((item) => {
+            return {
+              id: item.mission_id,
+              title: item.title,
+              points: item.xp_reward,
+              completed: item.status === 'COMPLETED',
+              missionType: item.category || item.mission_type || 'activity',
+            };
+          });
+          setMissions(mappedMissions);
+        }
 
         // 보유 중인 캐릭터 동적 좌표 매핑 (최대 3마리 제한)
         const animalCounts: Record<string, number> = {};
@@ -122,26 +124,18 @@ export const useHomeData = (onNewUnlock: (newlyUnlocked: string[]) => void) => {
 
   const completedCount = missions.filter((m) => m.completed).length;
 
-  const handleToggleMission = (id: number) => {
+  const handleToggleMission = async (id: number) => {
     const mission = missions.find((m) => m.id === id);
     if (!mission) return;
 
     if (mission.completed) {
       useAppStore.getState().showAlert('알림', '이미 완료된 미션입니다.');
     } else {
-      setActiveMissionId(id);
-      setIsVerifyModalVisible(true);
-    }
-  };
-
-  const handleCompleteVerification = async () => {
-    if (activeMissionId !== null) {
       try {
         setLoading(true);
         // 서버에 미션 완료 요청 전송
-        await missionApi.completeMission(activeMissionId);
-        setIsVerifyModalVisible(false);
-        useAppStore.getState().showAlert('미션 인증 완료', '미션 인증이 완료되어 포인트(XP)가 지급되었습니다!');
+        await missionApi.completeMission(id);
+        useAppStore.getState().showAlert('미션 인증 완료', '미션 포인트가 지급되었습니다!');
 
         // 홈 데이터 리로드하여 실시간으로 포인트 및 동물 성장 상태 반영
         await loadHomeData();
@@ -164,8 +158,6 @@ export const useHomeData = (onNewUnlock: (newlyUnlocked: string[]) => void) => {
     totalPoints,
     missions,
     characters,
-    isVerifyModalVisible,
-    setIsVerifyModalVisible,
     isLevelUpVisible,
     setIsLevelUpVisible,
     levelUpAnimal,
@@ -173,7 +165,6 @@ export const useHomeData = (onNewUnlock: (newlyUnlocked: string[]) => void) => {
     setGardenLayout,
     completedCount,
     handleToggleMission,
-    handleCompleteVerification,
     closeLevelUpModal,
   };
 };

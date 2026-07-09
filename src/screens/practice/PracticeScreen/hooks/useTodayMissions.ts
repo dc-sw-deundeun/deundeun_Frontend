@@ -14,7 +14,6 @@ export const useTodayMissions = () => {
   const [summaryStats, setSummaryStats] = useState<MissionSummaryResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [isVerifyModalVisible, setIsVerifyModalVisible] = useState(false);
   const [activeMissionId, setActiveMissionId] = useState<number | null>(null);
 
   const loadData = async () => {
@@ -61,32 +60,28 @@ export const useTodayMissions = () => {
 
   const completedCount = missions.filter((m) => m.completed).length;
 
-  const handleVerifyPress = (id: number) => {
-    setActiveMissionId(id);
-    setIsVerifyModalVisible(true);
-  };
-
-  const handleCompleteVerification = async () => {
-    if (activeMissionId !== null) {
-      try {
-        setLoading(true);
-        await missionApi.completeMission(activeMissionId);
-        setIsVerifyModalVisible(false);
-        useAppStore.getState().showAlert('미션 인증 완료', '미션 인증이 완료되어 XP가 지급되었습니다!');
-
-        // 데이터 다시 로드
-        await loadData();
-      } catch (error) {
-        console.error('미션 인증 실패:', error);
-        useAppStore.getState().showAlert('오류', '미션 인증 처리 중 오류가 발생했습니다.');
-      } finally {
-        setLoading(false);
-      }
+  const handleVerifyPress = async (id: number) => {
+    const mission = missions.find(m => m.id === id);
+    if (!mission) return;
+    
+    if (mission.completed) {
+      useAppStore.getState().showAlert('알림', '이미 완료된 미션입니다.');
+      return;
     }
-  };
 
-  const handleCancelVerification = () => {
-    setIsVerifyModalVisible(false);
+    try {
+      setLoading(true);
+      await missionApi.completeMission(id);
+      useAppStore.getState().showAlert('미션 인증 완료', '미션 인증이 완료되어 XP가 지급되었습니다!');
+
+      // 데이터 다시 로드
+      await loadData();
+    } catch (error) {
+      console.error('미션 인증 실패:', error);
+      useAppStore.getState().showAlert('오류', '미션 인증 처리 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return {
@@ -94,10 +89,7 @@ export const useTodayMissions = () => {
     weeklyStats,
     summaryStats,
     completedCount,
-    isVerifyModalVisible,
     handleVerifyPress,
-    handleCompleteVerification,
-    handleCancelVerification,
   };
 };
 

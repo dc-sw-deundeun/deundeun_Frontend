@@ -16,7 +16,6 @@ import { getMediaImageUrl } from '@/utils/imageUrl';
 import { styles } from './HomeScreen.styles';
 import { GardenView } from './components/GardenView';
 import { MissionBottomSheet } from './components/MissionBottomSheet';
-import { MissionVerifyModal } from './components/MissionVerifyModal';
 import { LevelUpModal } from './components/LevelUpModal';
 import { AnimalRevealModal } from './components/AnimalRevealModal';
 import { useHomeData } from './hooks/useHomeData';
@@ -55,8 +54,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     totalPoints,
     missions,
     characters,
-    isVerifyModalVisible,
-    setIsVerifyModalVisible,
     isLevelUpVisible,
     setIsLevelUpVisible,
     levelUpAnimal,
@@ -64,7 +61,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     setGardenLayout,
     completedCount,
     handleToggleMission,
-    handleCompleteVerification,
     closeLevelUpModal,
   } = useHomeData(triggerUnlockReveal);
 
@@ -142,16 +138,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         sheetY={sheetY}
         panHandlers={panResponder.panHandlers}
         onToggleMission={handleToggleMission}
-      />
-
-      {/* Verification bottom sheet modal */}
-      <MissionVerifyModal
-        visible={isVerifyModalVisible}
-        onClose={() => setIsVerifyModalVisible(false)}
-        onConfirm={handleCompleteVerification}
-        isDarkMode={isDarkMode}
-        glassModalCardStyle={glassModalCardStyle}
-        theme={theme}
       />
 
       {/* Level Up Celebration Modal */}

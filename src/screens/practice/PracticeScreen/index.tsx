@@ -9,7 +9,6 @@ import { WeeklyRecordCard } from './components/WeeklyRecordCard';
 import { MissionListCard } from './components/MissionListCard';
 import { MonthlyCalendarCard } from './components/MonthlyCalendarCard';
 import { SummaryGraphCard } from './components/SummaryGraphCard';
-import { VerifyMissionModal } from './components/VerifyMissionModal';
 import { useTodayMissions } from './hooks/useTodayMissions';
 import { useMonthlyCalendar } from './hooks/useMonthlyCalendar';
 
@@ -50,10 +49,7 @@ export default function PracticeScreen() {
     weeklyStats,
     summaryStats,
     completedCount,
-    isVerifyModalVisible,
     handleVerifyPress,
-    handleCompleteVerification,
-    handleCancelVerification,
   } = useTodayMissions();
 
   const {
@@ -128,14 +124,6 @@ export default function PracticeScreen() {
           />
         </View>
       </ScrollView>
-
-      {/* Verification bottom sheet modal */}
-      <VerifyMissionModal
-        visible={isVerifyModalVisible}
-        onConfirm={handleCompleteVerification}
-        onCancel={handleCancelVerification}
-        theme={theme}
-      />
     </SafeAreaView>
   );
 }
