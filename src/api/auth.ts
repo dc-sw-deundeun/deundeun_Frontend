@@ -22,6 +22,7 @@ export interface SignupRequest {
   email: string;
   password: string;
   nickname: string;
+  sex: 'MALE' | 'FEMALE';
   verification_token: string;
 }
 

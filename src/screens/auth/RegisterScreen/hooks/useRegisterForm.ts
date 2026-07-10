@@ -17,6 +17,8 @@ export const useRegisterForm = (navigation: RootStackScreenProps<'Register'>['na
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [sex, setSex] = useState<'MALE' | 'FEMALE' | ''>('');
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes (600 seconds)
   const [resendCooldown, setResendCooldown] = useState(0); // 60 seconds resend cooldown
   const [verifyFailCount, setVerifyFailCount] = useState(0); // Track verification failure count
@@ -140,17 +142,18 @@ export const useRegisterForm = (navigation: RootStackScreenProps<'Register'>['na
     }
   };
 
-  const isFormValid = isCodeVerified && password.length >= 8 && !passwordError && password === confirmPassword;
+  const isFormValid = isCodeVerified && password.length >= 8 && !passwordError && password === confirmPassword && nickname.length > 0 && (sex === 'MALE' || sex === 'FEMALE');
 
   const handleSignup = async () => {
     if (!isFormValid) return;
+    if (sex === '') return;
     setIsLoading(true);
     try {
-      const nickname = email.split('@')[0] || '사용자';
       await authApi.signup({
         email,
         password,
         nickname,
+        sex,
         verification_token: verificationToken || 'dummy_token',
       });
 
@@ -198,6 +201,10 @@ export const useRegisterForm = (navigation: RootStackScreenProps<'Register'>['na
     passwordError,
     confirmPassword,
     setConfirmPassword,
+    nickname,
+    setNickname,
+    sex,
+    setSex,
     timeLeft,
     resendCooldown,
     verifyFailCount,
