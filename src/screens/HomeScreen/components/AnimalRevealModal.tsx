@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, Modal, Animated, Pressable, Image } from 'react-native';
+import { View, TouchableOpacity, Modal, Animated, Pressable, Image, Platform } from 'react-native';
 import Text from '@/components/Text';
 import { COLORS } from '@/constants/theme';
 import { styles } from '../HomeScreen.styles';
@@ -37,7 +37,10 @@ export const AnimalRevealModal: React.FC<AnimalRevealModalProps> = ({
       <View style={styles.revealModalOverlay}>
         <View style={styles.revealModalContainer}>
           {revealStep !== 'revealed' ? (
-            <Pressable onPress={onShakePress} style={styles.revealInteractArea}>
+            <Pressable 
+              onPress={onShakePress} 
+              style={[styles.revealInteractArea, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+            >
               <Animated.View style={[shakeStyle, styles.giftBoxWrapper]}>
                 <Image source={getMediaImageUrl('ui', 'giftbox')} style={styles.giftBoxImage} />
               </Animated.View>
