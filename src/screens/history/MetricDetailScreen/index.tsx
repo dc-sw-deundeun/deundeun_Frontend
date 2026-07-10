@@ -6,12 +6,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ScreenHeader from '@/components/ScreenHeader';
 import { RootStackScreenProps } from '@/types/navigation';
 import { styles } from './MetricDetailScreen.styles';
-import { getMetricRangeConfig } from './constants';
 import { useMetricDetail } from './hooks/useMetricDetail';
 import { ValueCard } from './components/ValueCard';
 import { TrendChart } from './components/TrendChart';
 import { AnalysisCard } from './components/AnalysisCard';
 import { HabitsCard } from './components/HabitsCard';
+import { mapStatusToKorean, getStatusColor } from '@/screens/history/HealthReportScreen/utils';
+import { getFallbackRangeBar } from '@/screens/history/HealthReportScreen/fallbackRanges';
 
 export default function MetricDetailScreen({ navigation, route }: RootStackScreenProps<'MetricDetail'>) {
   const { isDarkMode } = useAppStore();
@@ -20,24 +21,16 @@ export default function MetricDetailScreen({ navigation, route }: RootStackScree
   const { recordId, metricCode, metricName, value, unit } = route.params;
   const numValue = parseFloat(value) || 0;
 
-  const { isLoading, trends, explanation, habits, completedHabits, toggleHabit } =
+  const { isLoading, trends, explanation, habits, completedHabits, toggleHabit, metricCard } =
     useMetricDetail(recordId, metricCode, numValue);
 
-  const config = getMetricRangeConfig(metricCode);
-  const positionPercentage = Math.min(
-    Math.max(((numValue - config.minVal) / (config.maxVal - config.minVal)) * 100, 2),
-    98
-  );
-
-  let statusText = '정상 구간';
-  let badgeColor = COLORS.success;
-  if (numValue > config.cautionMax) {
-    statusText = '위험 · 관리 필요';
-    badgeColor = COLORS.error;
-  } else if (numValue > config.normalMax) {
-    statusText = '주의 · 경계 구간';
-    badgeColor = COLORS.warning;
-  }
+  // 검진 결과 상세 그래프/상태는 서버 응답(metricCard)을 그대로 사용
+  const displayValue = metricCard?.value != null ? String(metricCard.value) : value;
+  const displayUnit = metricCard?.unit ?? unit;
+  const statusText = metricCard?.status_label ?? '정상';
+  const badgeColor = getStatusColor(mapStatusToKorean(metricCard?.status));
+  const rangeBar = metricCard?.range_bar ?? getFallbackRangeBar(metricCode, numValue);
+  const noteText = metricCard && metricCard.badge_text !== metricCard.status_label ? metricCard.badge_text : undefined;
 
   if (isLoading) {
     return (
@@ -58,12 +51,12 @@ export default function MetricDetailScreen({ navigation, route }: RootStackScree
         {/* Card 1: Value Detail */}
         <ValueCard
           metricName={metricName}
-          value={value}
-          unit={unit}
+          value={displayValue}
+          unit={displayUnit}
           statusText={statusText}
           badgeColor={badgeColor}
-          positionPercentage={positionPercentage}
-          config={config}
+          rangeBar={rangeBar}
+          noteText={noteText}
           theme={theme}
         />
 

@@ -4,4 +4,5 @@ export interface DailyMission {
   category: string;
   completed: boolean;
   xp: number;
+  missionType: string;
 }

@@ -10,28 +10,29 @@ import { myApi } from '@/api';
 import { styles } from './EditProfileScreen.styles';
 
 export default function EditProfileScreen({ route, navigation }: RootStackScreenProps<'EditProfile'>) {
-  const { nickname: initialNickname, email } = route.params;
+  const { isDarkMode, showAlert } = useAppStore();
+  const theme = isDarkMode ? COLORS.dark : COLORS.light;
+  const initialNickname = route.params?.nickname || '';
+  const email = route.params?.email || '';
+
   const [nickname, setNickname] = useState(initialNickname);
   const [loading, setLoading] = useState(false);
-  
-  const { isDarkMode } = useAppStore();
-  const theme = isDarkMode ? COLORS.dark : COLORS.light;
 
   const handleSave = async () => {
     if (!nickname.trim()) {
-      Alert.alert('알림', '닉네임을 입력해 주세요.');
+      showAlert('알림', '닉네임을 입력해 주세요.');
       return;
     }
-    
+
+    setLoading(true);
     try {
-      setLoading(true);
       await myApi.updateProfile({ nickname: nickname.trim() });
-      Alert.alert('성공', '프로필이 수정되었습니다.', [
-        { text: '확인', onPress: () => navigation.goBack() }
-      ]);
+      showAlert('성공', '프로필이 수정되었습니다.', () => {
+        navigation.goBack();
+      });
     } catch (error) {
-      console.error('프로필 수정 실패:', error);
-      Alert.alert('오류', '프로필 수정 중 오류가 발생했습니다. 다시 시도해 주세요.');
+      console.error('프로필 업데이트 실패:', error);
+      showAlert('오류', '프로필 수정 중 오류가 발생했습니다. 다시 시도해 주세요.');
     } finally {
       setLoading(false);
     }

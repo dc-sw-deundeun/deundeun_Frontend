@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { recordsApi } from '@/api';
+import { recordsApi, AnalysisMetricCard } from '@/api';
 import { getDefaultExplanation, getDefaultHabits } from '../constants';
 
 // 지표 상세(추이/해석/추천습관) 데이터 조회를 담당하는 훅
@@ -9,6 +9,8 @@ export const useMetricDetail = (recordId: number, metricCode: string, numValue: 
   const [explanation, setExplanation] = useState('');
   const [habits, setHabits] = useState<string[]>([]);
   const [completedHabits, setCompletedHabits] = useState<string[]>([]);
+  // 서버가 계산한 그래프(range_bar)/상태 정보 - 검진 결과 상세 그래프를 백분위 기반으로 그리기 위해 사용
+  const [metricCard, setMetricCard] = useState<AnalysisMetricCard | null>(null);
 
   useEffect(() => {
     loadMetricDetails();
@@ -38,7 +40,8 @@ export const useMetricDetail = (recordId: number, metricCode: string, numValue: 
         if (matchedDetail) {
           explText = matchedDetail.meaning?.body || '';
           habitsList = matchedDetail.recommendations?.items || [];
-          
+          setMetricCard(matchedDetail.metric || null);
+
           // Load trend points from analysis detail
           const points = matchedDetail.trend?.points || [];
           if (Array.isArray(points) && points.length > 0) {
@@ -126,7 +129,7 @@ export const useMetricDetail = (recordId: number, metricCode: string, numValue: 
     }
   };
 
-  return { isLoading, trends, explanation, habits, completedHabits, toggleHabit };
+  return { isLoading, trends, explanation, habits, completedHabits, toggleHabit, metricCard };
 };
 
 export default useMetricDetail;

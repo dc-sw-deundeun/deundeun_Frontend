@@ -28,12 +28,41 @@ export interface MissionItem {
   verification_mode: string | null;
 }
 
-// GET /missions/today 응답 구조
+// GET /missions/today 응답 구조 (날짜별 조회에도 재사용)
 export interface TodayMissionsResponse {
   date: string;
   total: number;
   completed: number;
   items: MissionItem[];
+}
+
+// GET /missions/calendar 응답 구조
+export interface CalendarDay {
+  date: string;
+  total: number;
+  completed: number;
+}
+
+export interface MissionCalendarResponse {
+  year: number;
+  month: number;
+  days: CalendarDay[];
+}
+
+// GET /missions/statistics/weekly 응답 구조
+export interface WeeklyStatisticsResponse {
+  week_start: string;
+  week_end: string;
+  total: number;
+  completed: number;
+  days: CalendarDay[];
+}
+
+// GET /missions/statistics/summary 응답 구조
+export interface MissionSummaryResponse {
+  total_assigned: number;
+  total_completed: number;
+  completion_rate: number;
 }
 
 export const missionApi = {
@@ -43,9 +72,39 @@ export const missionApi = {
     return response.data;
   },
 
+  // 날짜별 미션 조회
+  getMissionsByDate: async (targetDate: string): Promise<ApiResponse<TodayMissionsResponse>> => {
+    const response = await apiClient.get<ApiResponse<TodayMissionsResponse>>(`/missions/date/${targetDate}`);
+    return response.data;
+  },
+
+  // 월간 미션 캘린더
+  getMissionCalendar: async (year: number, month: number): Promise<ApiResponse<MissionCalendarResponse>> => {
+    const response = await apiClient.get<ApiResponse<MissionCalendarResponse>>('/missions/calendar', { params: { year, month } });
+    return response.data;
+  },
+
+  // 주간 미션 통계
+  getWeeklyStatistics: async (date?: string): Promise<ApiResponse<WeeklyStatisticsResponse>> => {
+    const response = await apiClient.get<ApiResponse<WeeklyStatisticsResponse>>('/missions/statistics/weekly', { params: { date } });
+    return response.data;
+  },
+
+  // 미션 총 완료 통계
+  getMissionSummary: async (): Promise<ApiResponse<MissionSummaryResponse>> => {
+    const response = await apiClient.get<ApiResponse<MissionSummaryResponse>>('/missions/statistics/summary');
+    return response.data;
+  },
+
   // 미션 완료 (self-report)
   completeMission: async (missionId: number): Promise<ApiResponse<void>> => {
     const response = await apiClient.post<ApiResponse<void>>(`/missions/${missionId}/complete`);
+    return response.data;
+  },
+
+  // 미션 알림 발송 (테스트용)
+  sendMissionNotification: async (): Promise<ApiResponse<void>> => {
+    const response = await apiClient.post<ApiResponse<void>>('/missions/notifications/send');
     return response.data;
   },
 };

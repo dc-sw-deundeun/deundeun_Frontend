@@ -48,6 +48,70 @@ export interface MetricResponse {
   reference_max?: string | number | null;
 }
 
+// 검진 결과 상세 그래프(막대) 구간 정보
+export interface RangeBarSegment {
+  label: string;
+  from_value: number;
+  to_value: number;
+  color: string; // 'green' | 'yellow' | 'red'
+}
+
+export interface RangeBarActiveSegment extends RangeBarSegment {
+  marker_percent: number;
+}
+
+export interface RangeBar {
+  min: number;
+  max: number;
+  marker: number;
+  marker_percent: number; // 전체 막대 기준 백분위 위치
+  segments: RangeBarSegment[];
+  active_segment: RangeBarActiveSegment | null;
+}
+
+// /records/checkups/{id}/analysis 응답의 ui.summary.cards, ui.details[].metric 항목
+export interface AnalysisMetricCard {
+  code: string;
+  label: string;
+  value: number | string | null;
+  unit: string | null;
+  status: string;
+  status_label: string;
+  value_text: string;
+  badge_text: string;
+  range_bar: RangeBar | null;
+}
+
+export interface AnalysisDetail {
+  analysis_id: number;
+  metric: AnalysisMetricCard;
+  range_bar: RangeBar | null;
+  trend: { title: string; points: { label: string; value: number }[] };
+  meaning: { title: string; body: string };
+  recommendations: { title: string; items: string[] };
+}
+
+export interface AnalysisUiSummary {
+  analysis_id: number;
+  overall: {
+    title: string;
+    summary: string;
+    counts: { normal: number; caution: number; risk: number; unknown: number };
+  };
+  cards: AnalysisMetricCard[];
+}
+
+export interface AnalysisData {
+  analysis_id: number;
+  record_id: number;
+  results: any[];
+  explanation: any;
+  ui: {
+    summary: AnalysisUiSummary;
+    details: AnalysisDetail[];
+  };
+}
+
 export const recordsApi = {
   // OCR 프리뷰 업로드
   uploadCheckupForOcr: async (data: MultiImageUploadRequest): Promise<ApiResponse<any>> => {
@@ -105,8 +169,8 @@ export const recordsApi = {
   },
 
   // 검진 기록 최신 HealthMetric 분석 조회
-  getCheckupAnalysis: async (recordId: number): Promise<ApiResponse<any>> => {
-    const response = await apiClient.get<ApiResponse<any>>(`/records/checkups/${recordId}/analysis`);
+  getCheckupAnalysis: async (recordId: number): Promise<ApiResponse<AnalysisData>> => {
+    const response = await apiClient.get<ApiResponse<AnalysisData>>(`/records/checkups/${recordId}/analysis`);
     return response.data;
   },
 };

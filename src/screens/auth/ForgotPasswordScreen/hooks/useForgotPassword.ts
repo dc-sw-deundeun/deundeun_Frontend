@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { authApi } from '@/api';
-import { parseBackendError } from '../utils';
+import { parseBackendError } from '../../LoginScreen/utils';
+import { useAppStore } from '@/store/useAppStore';
 
 // 비밀번호 찾기 모달(이메일 발송 -> 인증코드 확인 -> 새 비밀번호 설정) 전체 흐름을 담당하는 훅
 export const useForgotPassword = (onResetComplete: (email: string) => void) => {
@@ -21,7 +22,7 @@ export const useForgotPassword = (onResetComplete: (email: string) => void) => {
 
   // Password reset 10-minute timer & expired handling
   useEffect(() => {
-    if (!forgotModalVisible || forgotStep !== 2 || isForgotCodeVerified) return;
+    if (forgotStep !== 2 || isForgotCodeVerified) return;
     if (forgotTimeLeft <= 0) {
       setForgotCodeError('인증시간이 만료되었습니다. 재요청 버튼을 눌러주세요.');
       return;
@@ -30,7 +31,7 @@ export const useForgotPassword = (onResetComplete: (email: string) => void) => {
       setForgotTimeLeft((prev) => prev - 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, [forgotModalVisible, forgotStep, isForgotCodeVerified, forgotTimeLeft]);
+  }, [forgotStep, isForgotCodeVerified, forgotTimeLeft]);
 
   // Password reset 60-second cooldown timer
   useEffect(() => {
@@ -138,11 +139,26 @@ export const useForgotPassword = (onResetComplete: (email: string) => void) => {
     } catch (error: any) {
       setIsForgotLoading(false);
       const status = error?.response?.status;
+      const errorCode = error?.response?.data?.error_code;
       const parsedMsg = parseBackendError(error, '비밀번호 재설정 처리 중 오류가 발생했습니다.');
 
       if (status === 400 || status === 422) {
-        if (parsedMsg.includes('same') || parsedMsg.includes('이전') || parsedMsg.includes('동일')) {
-          setNewPasswordError('기존에 사용하던 비밀번호와 동일한 비밀번호는 사용할 수 없습니다.');
+        if (errorCode === 'SAME_PASSWORD' || parsedMsg.includes('기존') || parsedMsg.includes('동일')) {
+          setNewPassword('');
+          setNewPasswordConfirm('');
+          setNewPasswordError('기존 비밀번호와 동일합니다.');
+          useAppStore.getState().showAlert(
+            '오류',
+            '새 비밀번호는 기존 비밀번호와 달라야 합니다.\n다시 입력해 주세요.'
+          );
+        } else if (errorCode === 'INVALID_VERIFICATION_CODE') {
+          setIsForgotCodeVerified(false);
+          setForgotCodeError('인증번호가 일치하지 않거나 만료되었습니다.');
+          handleSendForgotEmail(); // automatically resend the email
+          useAppStore.getState().showAlert(
+            '인증 실패',
+            '인증 코드가 올바르지 않거나 만료되었습니다.\n인증번호가 전송되었습니다.'
+          );
         } else {
           const newFailCount = forgotVerifyFailCount + 1;
           setForgotVerifyFailCount(newFailCount);

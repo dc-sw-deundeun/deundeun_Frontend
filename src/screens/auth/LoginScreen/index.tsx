@@ -8,11 +8,9 @@ import { useAppStore } from '@/store/useAppStore';
 import ScreenHeader from '@/components/ScreenHeader';
 import { styles } from './LoginScreen.styles';
 import { LoginFormFields } from './components/LoginFormFields';
-import { ForgotPasswordModal } from './components/ForgotPasswordModal';
 import { useLoginForm } from './hooks/useLoginForm';
-import { useForgotPassword } from './hooks/useForgotPassword';
 
-export default function LoginScreen({ navigation }: RootStackScreenProps<'Login'>) {
+export default function LoginScreen({ navigation, route }: RootStackScreenProps<'Login'>) {
   const { isDarkMode } = useAppStore();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
 
@@ -33,37 +31,13 @@ export default function LoginScreen({ navigation }: RootStackScreenProps<'Login'
     handleLogin,
   } = useLoginForm(navigation);
 
-  const {
-    forgotModalVisible,
-    setForgotModalVisible,
-    forgotStep,
-    forgotEmail,
-    setForgotEmail,
-    forgotEmailError,
-    setForgotEmailError,
-    forgotCode,
-    setForgotCode,
-    forgotCodeError,
-    isForgotCodeVerified,
-    newPassword,
-    setNewPassword,
-    newPasswordError,
-    newPasswordConfirm,
-    setNewPasswordConfirm,
-    isForgotLoading,
-    forgotTimeLeft,
-    forgotResendCooldown,
-    forgotVerifyFailCount,
-    validateForgotCodeFormat,
-    validateNewPasswordFormat,
-    handleSendForgotEmail,
-    handleConfirmCode,
-    handleConfirmPasswordReset,
-    closeModal,
-  } = useForgotPassword((resetEmail) => {
-    setEmail(resetEmail);
-    setPassword('');
-  });
+  // Check if we returned from ForgotPassword with a prefilled email
+  React.useEffect(() => {
+    if (route.params?.prefilledEmail) {
+      setEmail(route.params.prefilledEmail);
+      navigation.setParams({ prefilledEmail: undefined });
+    }
+  }, [route.params?.prefilledEmail, navigation]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -96,7 +70,7 @@ export default function LoginScreen({ navigation }: RootStackScreenProps<'Login'
             passwordError={passwordError}
             autoLogin={autoLogin}
             onToggleAutoLogin={() => setAutoLogin(!autoLogin)}
-            onForgotPassword={() => setForgotModalVisible(true)}
+            onForgotPassword={() => navigation.navigate('ForgotPassword')}
             theme={theme}
           />
 
@@ -132,42 +106,6 @@ export default function LoginScreen({ navigation }: RootStackScreenProps<'Login'
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
-      {/* Forgot Password Modal */}
-      <ForgotPasswordModal
-        visible={forgotModalVisible}
-        onClose={closeModal}
-        forgotStep={forgotStep}
-        forgotEmail={forgotEmail}
-        onChangeForgotEmail={(val) => {
-          setForgotEmail(val);
-          if (forgotEmailError) setForgotEmailError('');
-        }}
-        forgotEmailError={forgotEmailError}
-        forgotCode={forgotCode}
-        onChangeForgotCode={(val) => {
-          setForgotCode(val);
-          validateForgotCodeFormat(val);
-        }}
-        forgotCodeError={forgotCodeError}
-        isForgotCodeVerified={isForgotCodeVerified}
-        forgotTimeLeft={forgotTimeLeft}
-        forgotResendCooldown={forgotResendCooldown}
-        forgotVerifyFailCount={forgotVerifyFailCount}
-        isForgotLoading={isForgotLoading}
-        onSendForgotEmail={handleSendForgotEmail}
-        onConfirmCode={handleConfirmCode}
-        newPassword={newPassword}
-        onChangeNewPassword={(val) => {
-          setNewPassword(val);
-          validateNewPasswordFormat(val);
-        }}
-        newPasswordError={newPasswordError}
-        newPasswordConfirm={newPasswordConfirm}
-        onChangeNewPasswordConfirm={setNewPasswordConfirm}
-        onConfirmPasswordReset={handleConfirmPasswordReset}
-        theme={theme}
-      />
     </SafeAreaView>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Alert } from 'react-native';
 import { authApi } from '@/api';
+import { useAppStore } from '@/store/useAppStore';
 import { storage } from '@/utils/storage';
 import { setAccessToken } from '@/api/client';
 import { RootStackScreenProps } from '@/types/navigation';
@@ -27,7 +28,7 @@ export const useChangePasswordForm = (navigation: RootStackScreenProps<'ChangePa
         setTimer((prev) => prev - 1);
       }, 1000);
     } else if (timer === 0 && isCodeSent && !isCodeVerified) {
-      Alert.alert('인증 시간 초과', '인증 시간이 초과되었습니다. 다시 인증요청을 해주세요.');
+      useAppStore.getState().showAlert('인증 시간 초과', '인증 시간이 초과되었습니다. 다시 인증요청을 해주세요.');
       setIsCodeSent(false);
     }
     return () => {
@@ -53,7 +54,7 @@ export const useChangePasswordForm = (navigation: RootStackScreenProps<'ChangePa
   // 1. 인증요청 버튼 클릭 핸들러
   const handleRequestVerify = async () => {
     if (!email) {
-      Alert.alert('이메일 입력', '이메일을 먼저 입력해 주세요.');
+      useAppStore.getState().showAlert('이메일 입력', '이메일을 먼저 입력해 주세요.');
       return;
     }
     try {
@@ -63,10 +64,10 @@ export const useChangePasswordForm = (navigation: RootStackScreenProps<'ChangePa
       setIsCodeVerified(false);
       setCode('');
       setTimer(180); // 3분 타이머 시작
-      Alert.alert('인증코드 발송', '비밀번호 재설정 인증코드가 발송되었습니다.\n로컬 백엔드 서버 콘솔 창에서 6자리 코드를 확인해 주세요.');
+      useAppStore.getState().showAlert('인증코드 발송', '비밀번호 재설정 인증코드가 발송되었습니다.');
     } catch (error) {
       console.error('인증요청 실패:', error);
-      Alert.alert('오류', '인증코드 요청 중 오류가 발생했습니다. 이메일을 다시 확인해 주세요.');
+      useAppStore.getState().showAlert('오류', '인증코드 요청 중 오류가 발생했습니다. 이메일을 다시 확인해 주세요.');
     } finally {
       setLoading(false);
     }
@@ -79,7 +80,7 @@ export const useChangePasswordForm = (navigation: RootStackScreenProps<'ChangePa
   // 최종 비밀번호 변경 시점에 백엔드에서 원스톱으로 코드를 검증하도록 설계합니다.
   const handleConfirmVerify = () => {
     if (!code || code.length < 6) {
-      Alert.alert('인증 실패', '인증번호 6자리를 올바르게 입력해 주세요.');
+      useAppStore.getState().showAlert('인증 실패', '인증번호 6자리를 올바르게 입력해 주세요.');
       return;
     }
     setIsCodeVerified(true);
@@ -113,9 +114,9 @@ export const useChangePasswordForm = (navigation: RootStackScreenProps<'ChangePa
       console.error('비밀번호 변경 실패:', error);
       const errorMsg = error?.response?.data?.message || '';
       if (errorMsg.includes('동일한 비밀번호') || String(error).includes('SamePasswordException')) {
-        Alert.alert('변경 실패', '기존 비밀번호와 동일한 비밀번호는 사용할 수 없습니다.');
+        useAppStore.getState().showAlert('변경 실패', '기존 비밀번호와 동일한 비밀번호는 사용할 수 없습니다.');
       } else {
-        Alert.alert('인증 실패', '인증번호가 일치하지 않거나 만료되었습니다. 다시 시도해 주세요.');
+        useAppStore.getState().showAlert('인증 실패', '인증번호가 일치하지 않거나 만료되었습니다.\n다시 시도해 주세요.');
       }
     } finally {
       setLoading(false);

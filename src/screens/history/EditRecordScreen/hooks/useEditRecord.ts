@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 import { recordsApi, MetricResponse } from '@/api';
+import { useAppStore } from '@/store/useAppStore';
 
 type EditState = Record<number, string>; // metric_id → edited value
 
@@ -29,7 +30,7 @@ export const useEditRecord = (recordId: number, onSaved: () => void) => {
         setEditState(initial);
       }
     } catch {
-      Alert.alert('오류', '지표를 불러오지 못했습니다.');
+      useAppStore.getState().showAlert('오류', '지표를 불러오지 못했습니다.');
     } finally {
       setIsLoadingData(false);
     }
@@ -48,7 +49,7 @@ export const useEditRecord = (recordId: number, onSaved: () => void) => {
       }));
 
     if (changed.length === 0) {
-      Alert.alert('변경 없음', '수정된 항목이 없습니다.');
+      useAppStore.getState().showAlert('변경 없음', '수정된 항목이 없습니다.');
       return;
     }
 
@@ -56,17 +57,12 @@ export const useEditRecord = (recordId: number, onSaved: () => void) => {
     try {
       const res = await recordsApi.bulkUpdateMetrics(recordId, changed);
       if (res.success) {
-        Alert.alert('수정 완료', `${changed.length}개 지표가 업데이트됐습니다.`, [
-          {
-            text: '확인',
-            onPress: onSaved,
-          },
-        ]);
+        useAppStore.getState().showAlert('수정 완료', `${changed.length}개 지표가 업데이트됐습니다.`, onSaved);
       } else {
-        Alert.alert('오류', '수정에 실패했습니다.');
+        useAppStore.getState().showAlert('오류', '수정에 실패했습니다.');
       }
     } catch {
-      Alert.alert('오류', '저장 중 오류가 발생했습니다.');
+      useAppStore.getState().showAlert('오류', '저장 중 오류가 발생했습니다.');
     } finally {
       setIsSaving(false);
     }

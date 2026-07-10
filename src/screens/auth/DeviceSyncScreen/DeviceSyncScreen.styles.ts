@@ -34,7 +34,7 @@ export const styles = StyleSheet.create({
   },
   syncList: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     gap: SPACING.md,
   },
   syncCard: {

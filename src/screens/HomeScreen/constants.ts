@@ -10,27 +10,29 @@ export const ANIMAL_COORDINATES: Record<string, { posX: number; posY: number; em
   tig: { posX: 180, posY: 130, emoji: '🐯' },
 };
 
+import { getMediaImageUrl } from '../../utils/imageUrl';
+
 // 정적 에셋 로드 require 맵 (해금 연출 및 동물 매핑용)
 export const ANIMAL_INACTIVE_IMAGES: Record<string, any> = {
-  frog: require('../../assets/animal/frog1.png'),
-  chick: require('../../assets/animal/chick1.png'),
-  pan: require('../../assets/animal/pan1.png'), // penguin
-  dog: require('../../assets/animal/dog1.png'),
-  cat: require('../../assets/animal/cat1.png'),
-  tig: require('../../assets/animal/tig1.png'), // tiger
-  bear: require('../../assets/animal/bear1.png'), // panda
-  mon: require('../../assets/animal/mon1.png'), // monkey
+  frog: getMediaImageUrl('animal', 'frog_1'),
+  chick: getMediaImageUrl('animal', 'chick_1'),
+  pan: getMediaImageUrl('animal', 'penguin_1'), // penguin
+  dog: getMediaImageUrl('animal', 'dog_1'),
+  cat: getMediaImageUrl('animal', 'cat_1'),
+  tig: getMediaImageUrl('animal', 'tiger_1'), // tiger
+  bear: getMediaImageUrl('animal', 'panda_1'), // panda
+  mon: getMediaImageUrl('animal', 'monkey_1'), // monkey
 };
 
 export const ANIMAL_ACTIVE_IMAGES: Record<string, any> = {
-  frog: require('../../assets/animal/frog2.png'),
-  chick: require('../../assets/animal/chick2.png'),
-  pan: require('../../assets/animal/pan2.png'), // penguin
-  dog: require('../../assets/animal/dog2.png'),
-  cat: require('../../assets/animal/cat2.png'),
-  tig: require('../../assets/animal/tig2.png'), // tiger
-  bear: require('../../assets/animal/bear2.png'), // panda
-  mon: require('../../assets/animal/mon2.png'), // monkey
+  frog: getMediaImageUrl('animal', 'frog_2'),
+  chick: getMediaImageUrl('animal', 'chick_2'),
+  pan: getMediaImageUrl('animal', 'penguin_2'), // penguin
+  dog: getMediaImageUrl('animal', 'dog_2'),
+  cat: getMediaImageUrl('animal', 'cat_2'),
+  tig: getMediaImageUrl('animal', 'tiger_2'), // tiger
+  bear: getMediaImageUrl('animal', 'panda_2'), // panda
+  mon: getMediaImageUrl('animal', 'monkey_2'), // monkey
 };
 
 // 백엔드 동물 코드를 에셋 매핑 키로 변환
@@ -62,5 +64,5 @@ export const ANIMAL_NAMES: Record<string, string> = {
 
 export const getRevealImage = (code: string) => {
   const assetKey = mapAnimalCodeToAssetKey(code);
-  return ANIMAL_INACTIVE_IMAGES[assetKey] || require('../../assets/animal/frog1.png');
+  return ANIMAL_INACTIVE_IMAGES[assetKey] || getMediaImageUrl('animal', 'frog_1');
 };

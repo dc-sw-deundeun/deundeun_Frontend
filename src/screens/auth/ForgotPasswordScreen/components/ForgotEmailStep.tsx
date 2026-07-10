@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Text from '@/components/Text';
+import Input from '@/components/Input';
+import { Mail } from 'lucide-react-native';
+import { styles } from '../../LoginScreen/LoginScreen.styles';
 import { COLORS, SPACING } from '@/constants/theme';
-import { styles } from '../LoginScreen.styles';
 
 interface ForgotEmailStepProps {
   forgotEmail: string;

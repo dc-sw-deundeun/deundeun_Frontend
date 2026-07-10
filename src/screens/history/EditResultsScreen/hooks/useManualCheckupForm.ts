@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Alert } from 'react-native';
 import { recordsApi } from '@/api';
+import { useAppStore } from '@/store/useAppStore';
 
 // 수동 검진 결과 입력 폼 상태 및 저장을 담당하는 훅
 export const useManualCheckupForm = (onSaved: () => void) => {
@@ -74,19 +75,14 @@ export const useManualCheckupForm = (onSaved: () => void) => {
       setIsLoading(false);
 
       if (res.success) {
-        Alert.alert('기록 저장 완료', '수동 검진 수치 데이터가 안전하게 저장되었습니다!', [
-          {
-            text: '확인',
-            onPress: onSaved,
-          },
-        ]);
+        useAppStore.getState().showAlert('기록 저장 완료', '수동 검진 수치 데이터가 안전하게 저장되었습니다!', onSaved);
       } else {
-        Alert.alert('저장 실패', res.message || '알 수 없는 이유로 저장에 실패했습니다.');
+        useAppStore.getState().showAlert('저장 실패', res.message || '알 수 없는 이유로 저장에 실패했습니다.');
       }
     } catch (error) {
       setIsLoading(false);
-      console.error('Manual Save Error:', error);
-      Alert.alert('오류', '검진 기록 저장 중 오류가 발생했습니다.');
+      console.error('검진 수기 등록 실패:', error);
+      useAppStore.getState().showAlert('오류', '검진 기록 저장 중 오류가 발생했습니다.');
     }
   };
 

@@ -7,9 +7,8 @@ import ScreenHeader from '@/components/ScreenHeader';
 import { styles } from './PracticeScreen.styles';
 import { WeeklyRecordCard } from './components/WeeklyRecordCard';
 import { MissionListCard } from './components/MissionListCard';
-import { AchievementBanner } from './components/AchievementBanner';
 import { MonthlyCalendarCard } from './components/MonthlyCalendarCard';
-import { VerifyMissionModal } from './components/VerifyMissionModal';
+import { SummaryGraphCard } from './components/SummaryGraphCard';
 import { useTodayMissions } from './hooks/useTodayMissions';
 import { useMonthlyCalendar } from './hooks/useMonthlyCalendar';
 
@@ -22,16 +21,16 @@ export default function PracticeScreen() {
   const { isDarkMode } = useAppStore();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
 
-  // Glassmorphism design styles preserving base colors
+  // Solid white/ivory card style to match the design
   const glassCardStyle = {
-    backgroundColor: isDarkMode ? 'rgba(46, 48, 35, 0.5)' : 'rgba(255, 255, 255, 0.3)',
-    borderWidth: 1,
-    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.75)',
-    shadowColor: isDarkMode ? '#000000' : '#1C2E21',
-    shadowOpacity: isDarkMode ? 0.12 : 0.05,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 4,
+    backgroundColor: isDarkMode ? '#2A2D27' : '#FFFFFF',
+    borderWidth: 0,
+    borderRadius: 24,
+    shadowColor: isDarkMode ? '#000000' : '#8A9984',
+    shadowOpacity: isDarkMode ? 0.2 : 0.08,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
   };
 
   const glassBannerStyle = {
@@ -47,22 +46,23 @@ export default function PracticeScreen() {
 
   const {
     missions,
-    streakDays,
+    weeklyStats,
+    summaryStats,
     completedCount,
-    isVerifyModalVisible,
+    submittingId,
     handleVerifyPress,
-    handleCompleteVerification,
-    handleCancelVerification,
   } = useTodayMissions();
 
   const {
     scrollViewRef,
-    selectedMonth,
+    selectedMonthString,
     selectedDayDetail,
+    selectedDayMissions,
+    loadingDayMissions,
     monthData,
-    getMonthData,
     handlePrevMonth,
     handleNextMonth,
+    handleGoToToday,
     handleDayPress,
     closeDayDetail,
   } = useMonthlyCalendar();
@@ -82,7 +82,12 @@ export default function PracticeScreen() {
 
         <View style={styles.scrollContent}>
           {/* 1. 이번 주 기록 Card */}
-          <WeeklyRecordCard streakDays={streakDays} glassCardStyle={glassCardStyle} theme={theme} />
+          <WeeklyRecordCard 
+            weeklyStats={weeklyStats} 
+            summaryStats={summaryStats} 
+            glassCardStyle={glassCardStyle} 
+            theme={theme} 
+          />
 
           {/* 2. 오늘의 미션 Section Header & Cards */}
           <MissionListCard
@@ -90,35 +95,37 @@ export default function PracticeScreen() {
             completedCount={completedCount}
             glassCardStyle={glassCardStyle}
             onVerifyPress={handleVerifyPress}
+            submittingId={submittingId}
             theme={theme}
           />
 
-          {/* 3. 주간 미션 달성 현황 Banner */}
-          <AchievementBanner glassBannerStyle={glassBannerStyle} />
+
 
           {/* 4. 월간 활동 현황 Calendar Card (Expands smoothly to show details inline) */}
           <MonthlyCalendarCard
             glassCardStyle={glassCardStyle}
             theme={theme}
-            selectedMonth={selectedMonth}
+            selectedMonthString={selectedMonthString}
             selectedDayDetail={selectedDayDetail}
+            selectedDayMissions={selectedDayMissions}
+            loadingDayMissions={loadingDayMissions}
             monthData={monthData}
-            getMonthData={getMonthData}
             onPrevMonth={handlePrevMonth}
             onNextMonth={handleNextMonth}
+            onGoToToday={handleGoToToday}
             onDayPress={handleDayPress}
             onCloseDayDetail={closeDayDetail}
           />
+
+          {/* 5. 총 완료 미션 갯수 Graph Card */}
+          <SummaryGraphCard
+            weeklyStats={weeklyStats}
+            summaryStats={summaryStats}
+            glassCardStyle={glassCardStyle}
+            theme={theme}
+          />
         </View>
       </ScrollView>
-
-      {/* Verification bottom sheet modal */}
-      <VerifyMissionModal
-        visible={isVerifyModalVisible}
-        onConfirm={handleCompleteVerification}
-        onCancel={handleCancelVerification}
-        theme={theme}
-      />
     </SafeAreaView>
   );
 }

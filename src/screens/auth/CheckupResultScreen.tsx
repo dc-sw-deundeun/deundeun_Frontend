@@ -8,16 +8,15 @@ import { useAppStore } from '@/store/useAppStore';
 import ScreenHeader from '@/components/ScreenHeader';
 import { recordsApi, MetricItem, onboardingApi } from '@/api';
 import { styles } from './CheckupResultScreen.styles';
-import { ConfirmModal } from '@/screens/mypage/MyPageScreen/components/ConfirmModal';
 import { TriangleAlert } from 'lucide-react-native';
 
 export default function CheckupResultScreen({ route, navigation }: RootStackScreenProps<'CheckupResult'>) {
-  const { isDarkMode } = useAppStore();
+  const { isDarkMode, showConfirm, showAlert } = useAppStore();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
 
   const [metrics, setMetrics] = useState<MetricItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorModalVisible, setErrorModalVisible] = useState(false);
+
 
   useEffect(() => {
     if (route.params?.data?.metrics) {
@@ -90,7 +89,16 @@ export default function CheckupResultScreen({ route, navigation }: RootStackScre
       });
     } catch (error: any) {
       setIsLoading(false);
-      setErrorModalVisible(true);
+      showAlert(
+        '분석 실패 안내',
+        '일시적인 오류로 인해 분석에 실패하였습니다.\n잠시 후 다시 시도해 주세요.\n\n(홈 화면의 [기록] 탭에서 나중에\n다시 시도하실 수 있습니다.)',
+        () => {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'MainTabs', params: { screen: 'Home' } }],
+          });
+        }
+      );
       console.error('Commit Checkup Error:', error);
       if (error.response?.data) {
         console.error('👉 서버 응답 전체 상세(Error Details):', JSON.stringify(error.response.data, null, 2));
@@ -153,23 +161,7 @@ export default function CheckupResultScreen({ route, navigation }: RootStackScre
         </ScrollView>
       </KeyboardAvoidingView>
 
-      <ConfirmModal
-        visible={errorModalVisible}
-        title="분석 실패 안내"
-        icon={<TriangleAlert color={COLORS.error} size={22} />}
-        description={'일시적인 오류로 인해 분석에 실패하였습니다.\n잠시 후 다시 시도해 주세요.\n\n(홈 화면의 [기록] 탭에서 나중에\n다시 시도하실 수 있습니다.)'}
-        confirmBgColor={COLORS.primary}
-        confirmText="홈으로 이동하기"
-        hideCancel={true}
-        onConfirm={() => {
-          setErrorModalVisible(false);
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'MainTabs', params: { screen: 'Home' } }],
-          });
-        }}
-        theme={theme}
-      />
+
     </SafeAreaView>
   );
 }

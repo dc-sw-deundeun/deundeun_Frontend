@@ -11,11 +11,11 @@ import { CompositeScreenProps } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, MainTabParamList } from '@/types/navigation';
+import { getMediaImageUrl } from '@/utils/imageUrl';
 
 import { styles } from './HomeScreen.styles';
 import { GardenView } from './components/GardenView';
 import { MissionBottomSheet } from './components/MissionBottomSheet';
-import { MissionVerifyModal } from './components/MissionVerifyModal';
 import { LevelUpModal } from './components/LevelUpModal';
 import { AnimalRevealModal } from './components/AnimalRevealModal';
 import { useHomeData } from './hooks/useHomeData';
@@ -54,8 +54,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     totalPoints,
     missions,
     characters,
-    isVerifyModalVisible,
-    setIsVerifyModalVisible,
     isLevelUpVisible,
     setIsLevelUpVisible,
     levelUpAnimal,
@@ -63,7 +61,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     setGardenLayout,
     completedCount,
     handleToggleMission,
-    handleCompleteVerification,
     closeLevelUpModal,
   } = useHomeData(triggerUnlockReveal);
 
@@ -109,7 +106,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Image
-            source={require('../../assets/splash_Icon.png')}
+            source={getMediaImageUrl('ui', 'splash_icon')}
             style={styles.logoImage}
           />
           <Text style={[styles.logoText, { color: theme.textDark }]}>든든</Text>
@@ -141,16 +138,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         sheetY={sheetY}
         panHandlers={panResponder.panHandlers}
         onToggleMission={handleToggleMission}
-      />
-
-      {/* Verification bottom sheet modal */}
-      <MissionVerifyModal
-        visible={isVerifyModalVisible}
-        onClose={() => setIsVerifyModalVisible(false)}
-        onConfirm={handleCompleteVerification}
-        isDarkMode={isDarkMode}
-        glassModalCardStyle={glassModalCardStyle}
-        theme={theme}
       />
 
       {/* Level Up Celebration Modal */}

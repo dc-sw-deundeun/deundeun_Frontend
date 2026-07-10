@@ -9,12 +9,14 @@ import { RootStackParamList, MainTabParamList } from '@/types/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import { COLORS } from '@/constants/theme';
 import Svg, { Path } from 'react-native-svg';
+import GlobalModal from '@/components/GlobalModal';
 
 // Import Screens
 import SplashScreen from '@/screens/auth/SplashScreen';
 import LoginScreen from '@/screens/auth/LoginScreen';
 import RegisterScreen from '@/screens/auth/RegisterScreen';
 import TermsScreen from '@/screens/auth/TermsScreen';
+import ForgotPasswordScreen from '@/screens/auth/ForgotPasswordScreen';
 import DeviceSyncScreen from '@/screens/auth/DeviceSyncScreen';
 import CheckupOcrScreen from '@/screens/auth/CheckupOcrScreen';
 import CheckupResultScreen from '@/screens/auth/CheckupResultScreen';
@@ -329,6 +331,7 @@ export const AppNavigator = () => {
         {/* Authentication Flow */}
         <Stack.Screen name="Splash" component={SplashScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         <Stack.Screen name="Terms" component={TermsScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="DeviceSync" component={DeviceSyncScreen} />
@@ -351,6 +354,7 @@ export const AppNavigator = () => {
         <Stack.Screen name="ConnectedApps" component={ConnectedAppsScreen} />
         <Stack.Screen name="Notifications" component={NotificationsScreen} />
       </Stack.Navigator>
+      <GlobalModal />
     </NavigationContainer>
   );
 };

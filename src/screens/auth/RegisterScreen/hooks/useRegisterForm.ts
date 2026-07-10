@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Alert } from 'react-native';
+import { useAppStore } from '@/store/useAppStore';
 import { authApi, setAccessToken } from '@/api';
 import { storage } from '@/utils/storage';
 import { RootStackScreenProps } from '@/types/navigation';
@@ -16,6 +17,8 @@ export const useRegisterForm = (navigation: RootStackScreenProps<'Register'>['na
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [sex, setSex] = useState<'MALE' | 'FEMALE' | ''>('');
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes (600 seconds)
   const [resendCooldown, setResendCooldown] = useState(0); // 60 seconds resend cooldown
   const [verifyFailCount, setVerifyFailCount] = useState(0); // Track verification failure count
@@ -139,17 +142,18 @@ export const useRegisterForm = (navigation: RootStackScreenProps<'Register'>['na
     }
   };
 
-  const isFormValid = isCodeVerified && password.length >= 8 && !passwordError && password === confirmPassword;
+  const isFormValid = isCodeVerified && password.length >= 8 && !passwordError && password === confirmPassword && nickname.length > 0 && (sex === 'MALE' || sex === 'FEMALE');
 
   const handleSignup = async () => {
     if (!isFormValid) return;
+    if (sex === '') return;
     setIsLoading(true);
     try {
-      const nickname = email.split('@')[0] || '사용자';
       await authApi.signup({
         email,
         password,
         nickname,
+        sex,
         verification_token: verificationToken || 'dummy_token',
       });
 
@@ -178,7 +182,7 @@ export const useRegisterForm = (navigation: RootStackScreenProps<'Register'>['na
         setEmailError(msg);
       } else {
         const errorMsg = error?.response?.data?.message || '회원가입 처리에 실패했습니다.';
-        Alert.alert('회원가입 실패', errorMsg);
+        useAppStore.getState().showAlert('회원가입 실패', errorMsg);
       }
     }
   };
@@ -197,6 +201,10 @@ export const useRegisterForm = (navigation: RootStackScreenProps<'Register'>['na
     passwordError,
     confirmPassword,
     setConfirmPassword,
+    nickname,
+    setNickname,
+    sex,
+    setSex,
     timeLeft,
     resendCooldown,
     verifyFailCount,

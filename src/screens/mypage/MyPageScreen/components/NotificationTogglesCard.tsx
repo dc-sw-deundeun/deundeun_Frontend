@@ -4,8 +4,11 @@ import Text from '@/components/Text';
 import Card from '@/components/Card';
 import { Switch } from 'react-native';
 import { COLORS } from '@/constants/theme';
-import { Leaf, Bell, Clock } from 'lucide-react-native';
+import { Leaf, Bell, Clock, Send } from 'lucide-react-native';
 import { styles } from '../MyPageScreen.styles';
+
+import { missionApi } from '@/api';
+import { Alert, TouchableOpacity } from 'react-native';
 
 interface NotificationTogglesCardProps {
   dietAlert: boolean;
@@ -30,6 +33,19 @@ export const NotificationTogglesCard: React.FC<NotificationTogglesCardProps> = (
   onToggleWeeklyReport,
   theme,
 }) => {
+  const handleTestNotification = async () => {
+    try {
+      const res = await missionApi.sendMissionNotification();
+      if (res.success) {
+        Alert.alert('알림 전송', '테스트 알림이 전송되었습니다.');
+      } else {
+        Alert.alert('오류', '알림 전송에 실패했습니다.');
+      }
+    } catch (e) {
+      Alert.alert('오류', '알림 전송 중 문제가 발생했습니다.');
+    }
+  };
+
   return (
     <Card style={styles.menuList} padding={0}>
       {/* Toggle 1 */}
@@ -50,16 +66,33 @@ export const NotificationTogglesCard: React.FC<NotificationTogglesCardProps> = (
 
       {/* Toggle 2 */}
       <View style={styles.toggleItem}>
-        <View style={styles.toggleItemLeft}>
+        <View style={[styles.toggleItemLeft, { flex: 1 }]}>
           <Bell size={20} color="#354B33" />
           <Text style={[styles.toggleTitle, { color: theme.text }]}>미션 리마인드</Text>
         </View>
-        <Switch
-          value={missionAlert}
-          onValueChange={onToggleMissionAlert}
-          trackColor={{ false: theme.border, true: COLORS.primary }}
-          thumbColor="#ffffff"
-        />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <TouchableOpacity
+            onPress={handleTestNotification}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: COLORS.primaryLight,
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+              borderRadius: 12,
+              gap: 4
+            }}
+          >
+            <Send size={14} color={COLORS.primaryDark} />
+            <Text style={{ fontSize: 12, fontWeight: '700', color: COLORS.primaryDark }}>테스트 발송</Text>
+          </TouchableOpacity>
+          <Switch
+            value={missionAlert}
+            onValueChange={onToggleMissionAlert}
+            trackColor={{ false: theme.border, true: COLORS.primary }}
+            thumbColor="#ffffff"
+          />
+        </View>
       </View>
 
       <View style={[styles.itemDivider, { backgroundColor: theme.border }]} />

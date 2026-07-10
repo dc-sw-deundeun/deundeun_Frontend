@@ -5,6 +5,7 @@ import { COLORS } from '@/constants/theme';
 import { Check } from 'lucide-react-native';
 import { styles } from '../HomeScreen.styles';
 import { Mission } from '../types';
+import { getMissionIcon } from '@/utils/missionIcon';
 
 interface MissionBottomSheetProps {
   missions: Mission[];
@@ -49,7 +50,19 @@ export const MissionBottomSheet: React.FC<MissionBottomSheetProps> = ({
       </View>
 
       {/* Mission Rows */}
-      <ScrollView style={styles.missionScroll} showsVerticalScrollIndicator={false}>
+      <Animated.ScrollView 
+        style={[
+          styles.missionScroll,
+          {
+            opacity: sheetY.interpolate({
+              inputRange: [0, 270, 350, 460],
+              outputRange: [1, 1, 0, 0],
+              extrapolate: 'clamp',
+            })
+          }
+        ]} 
+        showsVerticalScrollIndicator={false}
+      >
         {missions.map((mission) => (
           <TouchableOpacity
             key={mission.id}
@@ -66,7 +79,7 @@ export const MissionBottomSheet: React.FC<MissionBottomSheetProps> = ({
             <View style={styles.missionLeft}>
               {/* Icon wrapper circular background */}
               <View style={[styles.iconWrapper, { backgroundColor: isDarkMode ? 'rgba(228, 242, 230, 0.15)' : '#E4F2E6' }]}>
-                <Text style={styles.iconEmoji}>{mission.emoji}</Text>
+                {getMissionIcon(mission.missionType, isDarkMode ? '#FFFFFF' : theme.textDark, 20)}
               </View>
               <Text
                 style={[
@@ -97,7 +110,7 @@ export const MissionBottomSheet: React.FC<MissionBottomSheetProps> = ({
             </View>
           </TouchableOpacity>
         ))}
-      </ScrollView>
+      </Animated.ScrollView>
     </Animated.View>
   );
 };

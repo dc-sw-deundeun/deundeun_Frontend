@@ -46,6 +46,22 @@ export const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     fontSize: 16,
   },
+  radioGroup: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  radioButton: {
+    flex: 1,
+    height: 52,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
   verifyButton: {
     width: 100,
     height: 52,

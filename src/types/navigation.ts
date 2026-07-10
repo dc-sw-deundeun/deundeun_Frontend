@@ -11,7 +11,8 @@ export type MainTabParamList = {
 
 export type RootStackParamList = {
   Splash: undefined;
-  Login: undefined;
+  Login: { prefilledEmail?: string } | undefined;
+  ForgotPassword: undefined;
   Register: undefined;
   Terms: undefined;
   DeviceSync: undefined;

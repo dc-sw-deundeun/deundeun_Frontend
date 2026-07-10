@@ -75,9 +75,9 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
           {title}
         </Text>
       ) : (
-        <View style={{ flex: 1 }} />
+        <View style={{ flex: 2 }} />
       )}
-      <View style={styles.sideSlot}>{right}</View>
+      <View style={styles.rightSlot}>{right}</View>
     </View>
   );
 };
@@ -88,14 +88,17 @@ const styles = StyleSheet.create({
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
   },
   sideSlot: {
-    width: 40,
+    flex: 1,
     alignItems: 'flex-start',
   },
-  navTitle: {
+  rightSlot: {
     flex: 1,
+    alignItems: 'flex-end',
+  },
+  navTitle: {
+    flex: 2,
     fontSize: 18,
     fontWeight: '700',
     textAlign: 'center',

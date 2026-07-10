@@ -1,6 +1,7 @@
 import { Alert } from 'react-native';
 import { storage } from '@/utils/storage';
 import { setAccessToken, authApi, myApi } from '@/api';
+import { useAppStore } from '@/store/useAppStore';
 
 // 회원 탈퇴 및 로그아웃 액션을 담당하는 훅
 export const useAccountActions = (navigation: any) => {
@@ -14,10 +15,10 @@ export const useAccountActions = (navigation: any) => {
         index: 0,
         routes: [{ name: 'Splash' }],
       });
-      Alert.alert('탈퇴 성공', '성공적으로 탈퇴되었습니다.');
+      useAppStore.getState().showAlert('탈퇴 성공', '성공적으로 탈퇴되었습니다.');
     } catch (error) {
       console.error('회원 탈퇴 처리 실패:', error);
-      Alert.alert('탈퇴 실패', '회원 탈퇴 처리 중 오류가 발생했습니다. 다시 시도해 주세요.');
+      useAppStore.getState().showAlert('탈퇴 실패', '회원 탈퇴 처리 중 오류가 발생했습니다. 다시 시도해 주세요.');
     }
   };
 
@@ -35,7 +36,7 @@ export const useAccountActions = (navigation: any) => {
         index: 0,
         routes: [{ name: 'Splash' }],
       });
-      Alert.alert('로그아웃', '성공적으로 로그아웃되었습니다.');
+      useAppStore.getState().showAlert('로그아웃', '성공적으로 로그아웃되었습니다.');
     }
   };
 

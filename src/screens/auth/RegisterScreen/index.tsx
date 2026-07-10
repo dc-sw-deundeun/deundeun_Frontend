@@ -10,6 +10,7 @@ import { styles } from './RegisterScreen.styles';
 import { EmailVerificationField } from './components/EmailVerificationField';
 import { CodeVerificationField } from './components/CodeVerificationField';
 import { PasswordFields } from './components/PasswordFields';
+import { ProfileFields } from './components/ProfileFields';
 import { useRegisterForm } from './hooks/useRegisterForm';
 
 export default function RegisterScreen({ navigation }: RootStackScreenProps<'Register'>) {
@@ -30,6 +31,10 @@ export default function RegisterScreen({ navigation }: RootStackScreenProps<'Reg
     passwordError,
     confirmPassword,
     setConfirmPassword,
+    nickname,
+    setNickname,
+    sex,
+    setSex,
     timeLeft,
     resendCooldown,
     verifyFailCount,
@@ -90,19 +95,29 @@ export default function RegisterScreen({ navigation }: RootStackScreenProps<'Reg
               />
             )}
 
-            {/* Passwords - Show only after email is verified for progressive UI */}
+            {/* Passwords and Profile - Show only after email is verified for progressive UI */}
             {isCodeVerified && (
-              <PasswordFields
-                password={password}
-                onChangePassword={(val) => {
-                  setPassword(val);
-                  validatePasswordFormat(val);
-                }}
-                passwordError={passwordError}
-                confirmPassword={confirmPassword}
-                onChangeConfirmPassword={setConfirmPassword}
-                theme={theme}
-              />
+              <>
+                <PasswordFields
+                  password={password}
+                  onChangePassword={(val) => {
+                    setPassword(val);
+                    validatePasswordFormat(val);
+                  }}
+                  passwordError={passwordError}
+                  confirmPassword={confirmPassword}
+                  onChangeConfirmPassword={setConfirmPassword}
+                  theme={theme}
+                />
+                
+                <ProfileFields
+                  nickname={nickname}
+                  onChangeNickname={setNickname}
+                  sex={sex}
+                  onChangeSex={setSex}
+                  theme={{ ...theme, primary: COLORS.primary }}
+                />
+              </>
             )}
           </View>
 
