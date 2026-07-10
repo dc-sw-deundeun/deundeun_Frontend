@@ -49,6 +49,7 @@ export default function PracticeScreen() {
     weeklyStats,
     summaryStats,
     completedCount,
+    submittingId,
     handleVerifyPress,
   } = useTodayMissions();
 
@@ -94,6 +95,7 @@ export default function PracticeScreen() {
             completedCount={completedCount}
             glassCardStyle={glassCardStyle}
             onVerifyPress={handleVerifyPress}
+            submittingId={submittingId}
             theme={theme}
           />
 
