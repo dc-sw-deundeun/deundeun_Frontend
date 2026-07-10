@@ -10,7 +10,7 @@ import { styles } from './LoginScreen.styles';
 import { LoginFormFields } from './components/LoginFormFields';
 import { useLoginForm } from './hooks/useLoginForm';
 
-export default function LoginScreen({ navigation }: RootStackScreenProps<'Login'>) {
+export default function LoginScreen({ navigation, route }: RootStackScreenProps<'Login'>) {
   const { isDarkMode } = useAppStore();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
 
@@ -33,12 +33,11 @@ export default function LoginScreen({ navigation }: RootStackScreenProps<'Login'
 
   // Check if we returned from ForgotPassword with a prefilled email
   React.useEffect(() => {
-    const params = (navigation as any).getState().routes.find((r: any) => r.name === 'Login')?.params;
-    if (params?.prefilledEmail) {
-      setEmail(params.prefilledEmail);
-      navigation.setParams({ prefilledEmail: undefined } as any);
+    if (route.params?.prefilledEmail) {
+      setEmail(route.params.prefilledEmail);
+      navigation.setParams({ prefilledEmail: undefined });
     }
-  }, [navigation]);
+  }, [route.params?.prefilledEmail, navigation]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
