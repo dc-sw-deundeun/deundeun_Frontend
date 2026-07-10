@@ -62,10 +62,14 @@ export const MissionListCard: React.FC<MissionListCardProps> = ({
 
                 {/* Action button */}
                 {mission.completed ? (
-                  <View style={[styles.completedBtnBadge, { backgroundColor: '#E4F2E6' }]}>
+                  <TouchableOpacity 
+                    style={[styles.completedBtnBadge, { backgroundColor: '#E4F2E6' }]}
+                    onPress={() => onVerifyPress(mission.id)}
+                    activeOpacity={0.7}
+                  >
                     <Check color="#5B744C" size={14} strokeWidth={3} />
                     <Text style={styles.completedBtnText}>완료</Text>
-                  </View>
+                  </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
                     style={[styles.verifyButton, { backgroundColor: '#354B33' }]}
