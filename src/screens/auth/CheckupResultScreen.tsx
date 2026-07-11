@@ -64,7 +64,7 @@ export default function CheckupResultScreen({ route, navigation }: RootStackScre
           unit: m.unit || '',
           raw_text: String(m.value), // OCR raw_text fallback
         }));
-        
+
         await recordsApi.analyzeCheckup({
           record_id: recordId,
           sex: 'male', // 기본값 (추후 연동 필요)

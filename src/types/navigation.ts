@@ -20,7 +20,7 @@ export type RootStackParamList = {
   CheckupResult: {
     data?: any; // To pass OCR results
   };
-  Welcome: undefined;
+
   MainTabs: NavigatorScreenParams<MainTabParamList>;
   Details: {
     itemId: number;
