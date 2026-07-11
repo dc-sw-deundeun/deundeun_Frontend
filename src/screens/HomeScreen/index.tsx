@@ -150,7 +150,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       />
 
       {/* Animal Unlock Reveal Modal */}
-      <AnimalRevealModal
+      {/* <AnimalRevealModal
         currentRevealAnimal={currentRevealAnimal}
         revealStep={revealStep}
         shakeStyle={shakeStyle}
@@ -159,7 +159,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         onShakePress={startShake}
         onConfirm={handleConfirmReveal}
         onRequestClose={closeReveal}
-      />
+      /> */}
     </SafeAreaView>
   );
 }

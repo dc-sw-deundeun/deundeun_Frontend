@@ -81,7 +81,7 @@ export const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     shadowRadius: 16,
     elevation: 3,
-    height: 80,
+    minHeight: 80,
   },
   cardLeftAccent: {
     width: 6,
@@ -92,6 +92,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
+    paddingVertical: 16,
     justifyContent: 'space-between',
   },
   missionIconContainer: {
@@ -109,6 +110,7 @@ export const styles = StyleSheet.create({
   missionCardTitle: {
     fontSize: 15,
     fontWeight: '800',
+    flexShrink: 1,
   },
   missionCardPoints: {
     fontSize: 12,

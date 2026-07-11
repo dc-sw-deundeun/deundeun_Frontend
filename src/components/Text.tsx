@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text as RNText, TextProps as RNTextProps, StyleSheet } from 'react-native';
+import { Text as RNText, TextProps as RNTextProps, StyleSheet, Platform } from 'react-native';
 
 export interface TextProps extends RNTextProps {}
 
@@ -26,11 +26,20 @@ export const Text = React.forwardRef<RNText, TextProps>(
 
     const customStyle = [
       { fontFamily },
+      Platform.OS === 'web' ? { wordBreak: 'keep-all' } as any : {},
       style,
       removeWeight ? { fontWeight: 'normal' as const } : null,
     ];
 
-    return <RNText ref={ref} style={customStyle} {...props} />;
+    return (
+      <RNText 
+        lineBreakStrategyIOS="hangul-word" 
+        textBreakStrategy="simple"
+        ref={ref} 
+        style={customStyle} 
+        {...props} 
+      />
+    );
   }
 );
 

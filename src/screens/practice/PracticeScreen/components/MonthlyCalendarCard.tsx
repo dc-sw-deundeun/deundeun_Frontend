@@ -45,13 +45,13 @@ export const MonthlyCalendarCard: React.FC<MonthlyCalendarCardProps> = ({
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <Calendar color={theme.text} size={20} />
           <Text style={[styles.cardTitle, { color: theme.text }]}>월간 활동 현황</Text>
+          <TouchableOpacity onPress={onGoToToday} style={{ marginLeft: 4, paddingHorizontal: 8, paddingVertical: 4, backgroundColor: '#E4F2E6', borderRadius: 10 }}>
+            <Text style={{ fontSize: 11, fontWeight: '800', color: '#5B744C' }}>오늘</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Month Switcher Controls */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <TouchableOpacity onPress={onGoToToday} style={{ paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#E4F2E6', borderRadius: 14 }}>
-            <Text style={{ fontSize: 12, fontWeight: '800', color: '#5B744C' }}>오늘</Text>
-          </TouchableOpacity>
           <View style={styles.monthSwitcher}>
             <TouchableOpacity onPress={onPrevMonth} style={styles.monthArrow}>
               <Text style={[styles.monthArrowText, { color: theme.textMuted }]}>◀</Text>

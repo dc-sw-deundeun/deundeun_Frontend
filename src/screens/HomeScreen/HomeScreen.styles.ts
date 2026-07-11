@@ -141,6 +141,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    flex: 1,
   },
   iconWrapper: {
     width: 40,
@@ -155,6 +156,7 @@ export const styles = StyleSheet.create({
   missionTitleText: {
     fontSize: 15,
     fontWeight: '700',
+    flexShrink: 1,
   },
   lineThrough: {
     textDecorationLine: 'line-through',
