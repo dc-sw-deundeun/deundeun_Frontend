@@ -1,6 +1,4 @@
-import { API_CONFIG } from '@/constants/config';
-
-const BASE_URL = API_CONFIG.BASE_URL.replace('http://localhost:8000', 'https://api.deundeun.xyz');
+const BASE_URL = 'http://api.deundeun.xyz/api/v1';
 /**
  * 백엔드 Media API의 시스템 이미지 URL을 생성합니다.
  * @param purpose 이미지 목적/분류 (예: 'animal', 'ui')

@@ -29,11 +29,6 @@ export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'D
           !isAnySynced ? (
             <TouchableOpacity
               onPress={async () => {
-                if (syncedApps.length > 0) {
-                  // 이미 연동했다면 SKIP API를 부르지 않고(409 방지) 바로 이동
-                  navigation.navigate('CheckupOcr');
-                  return;
-                }
                 try {
                   await onboardingApi.connectWearable({ action: 'SKIP' });
                 } catch (e) {
@@ -79,7 +74,7 @@ export default function DeviceSyncScreen({ navigation }: RootStackScreenProps<'D
             />
           )}
 
-          {Platform.OS === 'ios' && (
+          {true && (
             <SyncSourceCard
               icon={<Smartphone color="#C62828" size={24} />}
               iconBg="#FFEBEE"
