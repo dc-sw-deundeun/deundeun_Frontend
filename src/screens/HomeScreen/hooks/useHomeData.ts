@@ -137,7 +137,22 @@ export const useHomeData = (onNewUnlock: (newlyUnlocked: string[]) => void) => {
     if (!mission) return;
 
     if (mission.completed) {
-      useAppStore.getState().showAlert('알림', '이미 완료된 미션입니다.');
+      useAppStore.getState().showConfirm(
+        '인증 취소',
+        '미션 인증을 취소하시겠습니까?',
+        async () => {
+          try {
+            setLoading(true);
+            await missionApi.cancelMissionComplete(id);
+            await loadHomeData();
+          } catch (error) {
+            console.error('미션 인증 취소 실패:', error);
+            useAppStore.getState().showAlert('오류', '미션 인증 취소 처리 중 오류가 발생했습니다.');
+          } finally {
+            setLoading(false);
+          }
+        }
+      );
     } else {
       try {
         setLoading(true);

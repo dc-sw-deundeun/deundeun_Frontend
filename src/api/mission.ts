@@ -102,6 +102,12 @@ export const missionApi = {
     return response.data;
   },
 
+  // 미션 완료 취소
+  cancelMissionComplete: async (missionId: number): Promise<ApiResponse<void>> => {
+    const response = await apiClient.delete<ApiResponse<void>>(`/missions/${missionId}/complete`);
+    return response.data;
+  },
+
   // 미션 알림 발송 (테스트용)
   sendMissionNotification: async (): Promise<ApiResponse<void>> => {
     const response = await apiClient.post<ApiResponse<void>>('/missions/notifications/send');

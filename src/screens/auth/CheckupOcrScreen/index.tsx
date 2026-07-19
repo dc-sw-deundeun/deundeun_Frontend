@@ -67,7 +67,7 @@ export default function CheckupOcrScreen({ navigation }: RootStackScreenProps<'C
               console.warn('Complete Onboarding Error:', e);
             } finally {
               setIsProcessing(false);
-              navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
+              navigation.reset({ index: 0, routes: [{ name: 'MainTabs', params: { screen: 'Home' } }] });
             }
           }}>
             <Text style={{ color: '#B3B0A5', fontSize: 14, fontWeight: '500', marginRight: SPACING.sm }} numberOfLines={1}>건너뛰기</Text>

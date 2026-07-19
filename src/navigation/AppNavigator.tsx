@@ -20,7 +20,6 @@ import ForgotPasswordScreen from '@/screens/auth/ForgotPasswordScreen';
 import DeviceSyncScreen from '@/screens/auth/DeviceSyncScreen';
 import CheckupOcrScreen from '@/screens/auth/CheckupOcrScreen';
 import CheckupResultScreen from '@/screens/auth/CheckupResultScreen';
-import WelcomeScreen from '@/screens/auth/WelcomeScreen';
 
 import HomeScreen from '@/screens/HomeScreen';
 import PracticeScreen from '@/screens/practice/PracticeScreen';
@@ -337,7 +336,7 @@ export const AppNavigator = () => {
         <Stack.Screen name="DeviceSync" component={DeviceSyncScreen} />
         <Stack.Screen name="CheckupOcr" component={CheckupOcrScreen} />
         <Stack.Screen name="CheckupResult" component={CheckupResultScreen} />
-        <Stack.Screen name="Welcome" component={WelcomeScreen} />
+
 
         {/* Authenticated Flow Tab Navigation */}
         <Stack.Screen name="MainTabs" component={MainTabNavigator} />
