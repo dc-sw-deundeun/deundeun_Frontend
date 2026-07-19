@@ -1,7 +1,7 @@
-// API base URL configuration
-// 백엔드 스웨거 기준: http://localhost:8000/docs (Prefix: /api/v1)
+import { Platform } from 'react-native';
+
 export const API_CONFIG = {
-  BASE_URL: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api/v1',
+  BASE_URL: Platform.OS === 'web' ? '/api/v1' : (process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api/v1'),
   TIMEOUT: 60000,
 };
 
